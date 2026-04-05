@@ -264,7 +264,7 @@ export const jobService = {
 export const userService = {
   updateProfile: async () => { await delay(600); return { success: true }; },
   getProfile:    async (id) => { await delay(); return CANDIDATES.find(c => c.id === Number(id)) || CANDIDATES[0]; },
-  getAppliedJobs: async ()  => { await delay(); return { applications: APPLICATIONS, total: APPLICATIONS.length }; },
+  getAppliedJobs: async (page = 1, limit = 10) => { await delay(); const start = (page-1)*limit; const slice = APPLICATIONS.slice(start, start+limit); return { applications: slice, total: APPLICATIONS.length, pagination: { page, pages: Math.ceil(APPLICATIONS.length/limit), total: APPLICATIONS.length } }; },
 };
 
 export const examService = {
