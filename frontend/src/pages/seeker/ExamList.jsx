@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Award, CheckCircle2, Star, ArrowRight, Lock } from 'lucide-react';
-import { examService } from '../services/mockServices';
-import { paymentService } from '../services/paymentService';
-import useAuth from '../context/useAuth';
-import Modal from '../components/ui/Modal';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { examService } from '../../services/mockServices';
+import useAuth from '../../context/useAuth';
+import Modal from '../../components/ui/Modal';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 const MIN_QUESTIONS = 10; // exam only shows if skill has >= 10 questions

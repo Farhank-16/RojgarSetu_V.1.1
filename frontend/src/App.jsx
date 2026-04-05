@@ -32,7 +32,7 @@ const CandidateProfile  = lazy(() => import('./pages/employer/CandidateProfile')
 
 const Subscription   = lazy(() => import('./pages/Subscription'));
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
-const ExamList       = lazy(() => import('./pages/ExamList'));
+const ExamList       = lazy(() => import('./pages/seeker/ExamList'));
 
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
 const AdminUsers     = lazy(() => import('./pages/admin/Users'));
