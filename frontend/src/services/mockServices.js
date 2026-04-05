@@ -225,7 +225,11 @@ export const jobService = {
     if (filters.search)  jobs = jobs.filter(j => j.title.toLowerCase().includes(filters.search.toLowerCase()) || j.skill_name.toLowerCase().includes(filters.search.toLowerCase()));
     if (filters.skillId) jobs = jobs.filter(j => j.skill_id === Number(filters.skillId));
     if (filters.city)    jobs = jobs.filter(j => j.city.toLowerCase().includes(filters.city.toLowerCase()));
-    return { jobs, total: jobs.length };
+    const page  = filters.page  || 1;
+    const limit = filters.limit || 10;
+    const start = (page - 1) * limit;
+    const paged = jobs.slice(start, start + limit);
+    return { jobs: paged, total: jobs.length, pagination: { page, pages: Math.ceil(jobs.length / limit), total: jobs.length } };
   },
   getJob:             async (id)  => { await delay(); return JOBS.find(j => j.id === Number(id)) || JOBS[0]; },
   getRecommendedJobs: async ()    => { await delay(); return { jobs: JOBS.slice(0, 4) }; },
