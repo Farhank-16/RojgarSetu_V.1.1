@@ -132,7 +132,7 @@ import { Filter, X } from 'lucide-react';
 import { jobService } from '../../services/mockServices';
 import { skillService } from '../../services/mockServices';
 import useAuth from '../../context/useAuth';
-import CandidateCard from '../../components/CandidateCard';
+import CandidateCard from '../../components/cards/CandidateCard';
 import Select from '../../components/ui/Select';
 import Modal from '../../components/ui/Modal';
 import EmptyState from '../../components/ui/EmptyState';
