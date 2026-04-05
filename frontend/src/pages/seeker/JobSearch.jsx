@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, MapPin, X } from 'lucide-react';
-import { jobService } from '../../services/jobService';
-import { skillService } from '../../services/skillService';
+import { jobService } from '../../services/mockServices';
+import { skillService } from '../../services/mockServices';
 import useAuth from '../../context/useAuth';
 import useDebounce from '../../hooks/useDebounce';
 import JobCard from '../../components/cards/JobCard';

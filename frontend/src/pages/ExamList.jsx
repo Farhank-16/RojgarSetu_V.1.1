@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Award, CheckCircle2, Star, ArrowRight, Lock } from 'lucide-react';
-import { examService } from '../services/examService';
+import { examService } from '../services/mockServices';
 import { paymentService } from '../services/paymentService';
 import useAuth from '../context/useAuth';
 import Modal from '../components/ui/Modal';

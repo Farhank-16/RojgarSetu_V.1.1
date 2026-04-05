@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navigation, CheckCircle2, ArrowRight } from 'lucide-react';
-import { jobService } from '../../services/jobService';
-import { skillService } from '../../services/skillService';
+import { jobService } from '../../services/mockServices';
+import { skillService } from '../../services/mockServices';
 import useAuth from '../../context/useAuth';
 import { useLocation as useGeoLocation } from '../../hooks/useLocation';
 import Input from '../../components/ui/Input';

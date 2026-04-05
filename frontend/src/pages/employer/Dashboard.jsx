@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Briefcase, Users, Eye, Crown, TrendingUp, MapPin, ArrowRight, ChevronRight, CheckCircle2, BadgeCheck } from 'lucide-react';
 import useAuth from '../../context/useAuth';
-import { jobService } from '../../services/jobService';
+import { jobService } from '../../services/mockServices';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 
 const EmployerDashboard = () => {

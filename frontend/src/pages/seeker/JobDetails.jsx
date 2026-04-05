@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Clock, IndianRupee, Phone, CheckCircle2, Users, ArrowRight, BadgeCheck } from 'lucide-react';
-import { jobService } from '../../services/jobService';
+import { jobService } from '../../services/mockServices';
 import useAuth from '../../context/useAuth';
 import Modal from '../../components/ui/Modal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';

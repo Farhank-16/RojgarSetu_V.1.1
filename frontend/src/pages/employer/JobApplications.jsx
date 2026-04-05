@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Phone, CheckCircle2, Award, User, Lock, ChevronRight } from 'lucide-react';
-import { jobService } from '../../services/jobService';
+import { jobService } from '../../services/mockServices';
 import useAuth from '../../context/useAuth';
 import Modal from '../../components/ui/Modal';
 import Select from '../../components/ui/Select';

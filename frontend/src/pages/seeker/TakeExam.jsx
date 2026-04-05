@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, CheckCircle2, XCircle } from 'lucide-react';
-import { examService } from '../../services/examService';
+import { examService } from '../../services/mockServices';
 import useAuth from '../../context/useAuth';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import Modal from '../../components/ui/Modal';

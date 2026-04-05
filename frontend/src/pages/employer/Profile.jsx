@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Mail, Edit2, Crown, LogOut, ChevronRight } from 'lucide-react';
 import useAuth from '../../context/useAuth';
-import { userService } from '../../services/userService';
+import { userService } from '../../services/mockServices';
 import Input from '../../components/ui/Input';
 import Modal from '../../components/ui/Modal';
 import toast from 'react-hot-toast';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { jobService } from '../../services/jobService';
-import { skillService } from '../../services/skillService';
+import { jobService } from '../../services/mockServices';
+import { skillService } from '../../services/mockServices';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';

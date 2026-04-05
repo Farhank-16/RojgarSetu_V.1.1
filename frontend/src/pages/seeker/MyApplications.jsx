@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, Clock, MapPin, ChevronRight } from 'lucide-react';
-import { userService } from '../../services/userService';
+import { userService } from '../../services/mockServices';
 import EmptyState from '../../components/ui/EmptyState';
 import { SkeletonList } from '../../components/ui/Skeleton';
 

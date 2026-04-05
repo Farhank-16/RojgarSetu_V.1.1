@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, MapPin, Users, Eye, Edit2, Trash2, MoreVertical, ChevronRight } from 'lucide-react';
-import { jobService } from '../../services/jobService';
+import { jobService } from '../../services/mockServices';
 import Modal from '../../components/ui/Modal';
 import EmptyState from '../../components/ui/EmptyState';
 import { SkeletonList } from '../../components/ui/Skeleton';

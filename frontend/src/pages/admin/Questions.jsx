@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { adminService } from '../../services/adminService';
-import { skillService } from '../../services/skillService';
+import { adminService } from '../../services/mockServices';
+import { skillService } from '../../services/mockServices';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Modal from '../../components/ui/Modal';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Phone, Award, CheckCircle2, Lock, ArrowRight } from 'lucide-react';
-import { userService } from '../../services/userService';
+import { userService } from '../../services/mockServices';
 import useAuth from '../../context/useAuth';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import toast from 'react-hot-toast';

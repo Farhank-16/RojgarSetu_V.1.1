@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Briefcase, Award, Crown, MapPin, CheckCircle2, ArrowRight, TrendingUp } from 'lucide-react';
 import useAuth from '../../context/useAuth';
-import { jobService } from '../../services/jobService';
+import { jobService } from '../../services/mockServices';
 import JobCard from '../../components/cards/JobCard';
 import { SkeletonList } from '../../components/ui/Skeleton';
 
