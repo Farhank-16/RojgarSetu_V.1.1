@@ -86,11 +86,21 @@ h1,h2,h3,h4,h5,h6,.font-display {
   transition: border-color 0.15s, box-shadow 0.15s;
   outline: none;
 }
+
+/* 🔥 ICON INPUT FIX */
+.input-icon {
+  padding-left: 2.5rem; /* space for icon */
+}
+
 .input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(37,99,235,0.10);
 }
-.input::placeholder { color: var(--text-muted); }
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
 
 /* ── Buttons ────── */
 .btn-primary {

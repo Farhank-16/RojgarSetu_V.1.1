@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Users, Briefcase, FileQuestion } from 'lucide-react';
-import { adminService } from '../../services/mockServices';
+import { adminService } from '../../services/adminService';
 import Input from '../../components/ui/Input';
 import Modal from '../../components/ui/Modal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';

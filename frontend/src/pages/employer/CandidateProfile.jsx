@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Phone, Award, CheckCircle2, Lock, ArrowRight } from 'lucide-react';
-import { userService } from '../../services/mockServices';
+import { userService } from '../../services/userService';
 import useAuth from '../../context/useAuth';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import toast from 'react-hot-toast';
@@ -90,17 +90,14 @@ const CandidateProfile = () => {
         {/* Details */}
         <div className="card-elevated p-4 divide-y divide-slate-50">
           <h3 className="font-display font-bold text-slate-800 text-sm pb-3">Details</h3>
-          {[
-            ['Experience', `${profile.experience_years || 0} years`],
-            ['Expected Salary', profile.expected_salary_min || profile.expected_salary_max
-              ? `₹${Number(profile.expected_salary_min || 0).toLocaleString('en-IN')} – ₹${Number(profile.expected_salary_max || 0).toLocaleString('en-IN')}`
-              : 'Not specified'],
-          ].map(([label, value]) => (
-            <div key={label} className="flex items-center justify-between py-2.5">
-              <span className="text-xs text-slate-400">{label}</span>
-              <span className="font-semibold text-slate-800 text-sm">{value}</span>
+          {profile.experience_years > 0 ? (
+            <div className="flex items-center justify-between py-2.5">
+              <span className="text-xs text-slate-400">Experience</span>
+              <span className="font-semibold text-slate-800 text-sm">{profile.experience_years} years</span>
             </div>
-          ))}
+          ) : (
+            <p className="text-slate-400 text-xs py-2">No details provided yet</p>
+          )}
         </div>
 
         {/* Skills */}

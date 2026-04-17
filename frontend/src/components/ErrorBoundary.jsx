@@ -43,8 +43,7 @@ class ErrorBoundary extends React.Component {
         </p>
 
         {/* Show error in dev only */}
-        {/* {import.meta.env.DEV && this.state.error && ( */}
-        {this.state.error && (
+        {import.meta.env.DEV && this.state.error && (
           <div className="w-full max-w-xs mb-6 p-3 bg-red-50 rounded-xl border border-red-100">
             <p className="text-xs text-red-600 font-mono break-all">
               {this.state.error.message}

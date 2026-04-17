@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { adminService } from '../../services/mockServices';
+import { Search, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react';
+import { adminService } from '../../services/adminService';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import toast from 'react-hot-toast';
 
@@ -23,12 +23,56 @@ const NameAvatar = ({ name }) => (
   </div>
 );
 
+// Profile detail modal
+const ProfileModal = ({ user, onClose }) => {
+  if (!user) return null;
+  const fields = [
+    ['Email',        user.email],
+    ['Phone',        user.phone || '—'],
+    ['City',         user.city  || '—'],
+    ['Area',         user.area  || '—'],
+    ['State',        user.state || '—'],
+    ['Experience',   `${user.experience_years || 0} yrs`],
+    ['Availability', user.availability?.replace('_',' ') || '—'],
+    ['Subscription', user.subscription_status || 'free'],
+    ['Sub End',      user.subscription_end ? new Date(user.subscription_end).toLocaleDateString() : '—'],
+    ['Joined',       user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'],
+  ];
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
+      onClick={onClose}>
+      <div className="bg-white w-full max-w-lg rounded-t-2xl p-5 max-h-[80vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display font-bold text-slate-900">{user.name || 'No name'}</h3>
+          <button onClick={onClose}><X className="w-5 h-5 text-slate-400" /></button>
+        </div>
+        <div className="divide-y divide-slate-50">
+          {fields.map(([label, value]) => (
+            <div key={label} className="flex justify-between py-2.5">
+              <span className="text-xs text-slate-400">{label}</span>
+              <span className="text-sm font-semibold text-slate-800 capitalize text-right max-w-[60%] truncate">{value}</span>
+            </div>
+          ))}
+        </div>
+        {user.bio && (
+          <div className="mt-3 p-3 bg-slate-50 rounded-xl">
+            <p className="text-xs text-slate-400 mb-1">Bio</p>
+            <p className="text-sm text-slate-600">{user.bio}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const AdminUsers = () => {
-  const [users, setUsers]       = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [search, setSearch]     = useState('');
-  const [role, setRole]         = useState('');
+  const [users, setUsers]           = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [search, setSearch]         = useState('');
+  const [role, setRole]             = useState('');
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
+  const [viewUser, setViewUser]     = useState(null);
 
   useEffect(() => { loadUsers(); }, [search, role, pagination.page]);
 
@@ -50,14 +94,6 @@ const AdminUsers = () => {
     } catch { toast.error('Failed to update'); }
   };
 
-  const toggleVerified = async (id, isVerified) => {
-    try {
-      await adminService.updateUserStatus(id, { isVerified: !isVerified });
-      setUsers(p => p.map(u => u.id === id ? { ...u, is_verified: !isVerified } : u));
-      toast.success(`User ${isVerified ? 'unverified' : 'verified'}`);
-    } catch { toast.error('Failed to update'); }
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
 
@@ -66,8 +102,7 @@ const AdminUsers = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search users..." className="input pl-9 py-2.5 text-sm"
-            style={{ borderRadius: '10px' }} />
+            placeholder="Search users..." className="input input-icon" />
         </div>
         <select value={role} onChange={e => setRole(e.target.value)}
           className="input w-full py-2.5 text-sm" style={{ borderRadius: '10px' }}>
@@ -90,28 +125,22 @@ const AdminUsers = () => {
 
               return (
                 <div key={user.id} className="card-elevated p-4">
-                  {/* User info */}
                   <div className="flex items-start gap-3 mb-3">
-                    <div className="relative">
-                      <NameAvatar name={user.name} />
-                      {user.is_verified && (
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center ring-2 ring-white">
-                          <CheckCircle2 className="w-2.5 h-2.5 text-white" />
-                        </div>
-                      )}
-                    </div>
+                    <NameAvatar name={user.name} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <p className="font-display font-bold text-slate-900 text-sm truncate">
                           {user.name || 'No name'}
                         </p>
                         <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-                          style={{ background: user.is_active ? '#f0fdf4' : '#fff1f2',
-                            color: user.is_active ? '#15803d' : '#be123c' }}>
+                          style={{
+                            background: user.is_active ? '#f0fdf4' : '#fff1f2',
+                            color:      user.is_active ? '#15803d' : '#be123c',
+                          }}>
                           {user.is_active ? 'Active' : 'Inactive'}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 mt-0.5">{user.mobile}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{user.email}</p>
                       <div className="flex gap-1.5 mt-1.5 flex-wrap">
                         <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
                           style={{ background: rolePill.bg, color: rolePill.color }}>
@@ -125,15 +154,20 @@ const AdminUsers = () => {
                     </div>
                   </div>
 
-                  {/* Action buttons */}
+                  {/* Actions — View Profile + Activate/Deactivate only */}
                   <div className="flex gap-2">
-                    <button onClick={() => toggleStatus(user.id, user.is_active)}
-                      className="btn-secondary flex-1 py-2 text-xs" style={{ borderRadius: '8px' }}>
-                      {user.is_active ? 'Deactivate' : 'Activate'}
+                    <button onClick={() => setViewUser(user)}
+                      className="btn-secondary flex-1 py-2 text-xs flex items-center justify-center gap-1"
+                      style={{ borderRadius: '8px' }}>
+                      <Eye className="w-3.5 h-3.5" /> View Profile
                     </button>
-                    <button onClick={() => toggleVerified(user.id, user.is_verified)}
-                      className="btn-secondary flex-1 py-2 text-xs" style={{ borderRadius: '8px' }}>
-                      {user.is_verified ? 'Unverify' : 'Verify ✓'}
+                    <button onClick={() => toggleStatus(user.id, user.is_active)}
+                      className="flex-1 py-2 text-xs font-display font-bold rounded-lg transition-all"
+                      style={{
+                        background: user.is_active ? '#fff1f2' : '#f0fdf4',
+                        color:      user.is_active ? '#be123c' : '#15803d',
+                      }}>
+                      {user.is_active ? 'Deactivate' : 'Activate'}
                     </button>
                   </div>
                 </div>
@@ -161,6 +195,9 @@ const AdminUsers = () => {
           </div>
         )}
       </div>
+
+      {/* Profile detail modal */}
+      {viewUser && <ProfileModal user={viewUser} onClose={() => setViewUser(null)} />}
     </div>
   );
 };

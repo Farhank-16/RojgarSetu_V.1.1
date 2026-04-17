@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navigation, CheckCircle2 } from 'lucide-react';
 import useAuth from '../../context/useAuth';
-import { userService } from '../../services/mockServices';
-import { skillService } from '../../services/mockServices';
+import { userService } from '../../services/userService';
+import { skillService } from '../../services/skillService';
 import { useLocation as useGeoLocation } from '../../hooks/useLocation';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
@@ -44,7 +44,7 @@ const CompleteProfile = () => {
     try {
       const coords = await getCurrentLocation();
       setFormData(p => ({ ...p, latitude: coords.latitude, longitude: coords.longitude }));
-      toast.success('Location mil gayi!');
+      toast.success('Location captured!');
     } catch (error) {
       toast.error(error.message);
     }
@@ -60,8 +60,8 @@ const CompleteProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.city)                          return toast.error('City daalo');
-    if (!formData.latitude || !formData.longitude) return toast.error('Location capture karo');
+    if (!formData.city)                          return toast.error('Enter City');
+    if (!formData.latitude || !formData.longitude) return toast.error('Capture your location');
 
     setLoading(true);
     try {
@@ -70,10 +70,10 @@ const CompleteProfile = () => {
         skills: formData.selectedSkills.map(skillId => ({ skillId, proficiency: 'beginner' })),
       });
       updateUser({ profileCompleted: true });
-      toast.success('Profile complete ho gayi!');
+      toast.success('Profile is completed!');
       navigate(user.role === 'employer' ? '/employer' : '/seeker');
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Profile save nahi hui');
+      toast.error(error.response?.data?.error || 'Profile not saved');
     } finally {
       setLoading(false);
     }

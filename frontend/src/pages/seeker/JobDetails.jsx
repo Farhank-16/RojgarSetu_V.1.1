@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Clock, IndianRupee, Phone, CheckCircle2, Users, ArrowRight, BadgeCheck } from 'lucide-react';
-import { jobService } from '../../services/mockServices';
+import { jobService } from '../../services/jobService';
 import useAuth from '../../context/useAuth';
 import Modal from '../../components/ui/Modal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -66,7 +66,7 @@ const JobDetails = () => {
     { icon: IndianRupee, label: 'Salary',      value: `${salary} ${SAL_TYPE[job.salary_type] || '/mo'}` },
     { icon: MapPin,      label: 'Location',    value: [job.area, job.city].filter(Boolean).join(', ') + (job.distance != null ? ` · ${Number(job.distance).toFixed(1)} km` : '') },
     { icon: Clock,       label: 'Experience',  value: `${job.experience_required || 0}+ years` },
-    { icon: Users,       label: 'Availability',value: job.availability_required?.replace('_', ' ') || 'Flexible' },
+    { icon: Users,       label: 'Availability',value: job.availability?.replace('_', ' ') || 'Flexible' },
     ...(job.job_duration ? [{ icon: Clock, label: 'Duration', value: job.job_duration }] : []),
   ];
 

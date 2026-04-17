@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Eye, Users, ChevronLeft, ChevronRight } from 'lucide-react';
-import { adminService } from '../../services/mockServices';
+import { adminService } from '../../services/adminService';
 import { SkeletonList } from '../../components/ui/Skeleton';
 
 const STATUS_BADGE = {
@@ -37,12 +37,12 @@ const AdminJobs = () => {
       {/* Sticky filters */}
       <div className="sticky top-14 bg-white border-b border-slate-100 z-30 px-4 py-3 space-y-2.5">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 " />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search jobs..."
-            className="input pl-9 py-2.5 text-sm"
+            className="input input-icon  "
             style={{ borderRadius: '10px' }}
           />
         </div>

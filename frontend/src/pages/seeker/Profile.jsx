@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Mail, Award, CheckCircle2, Edit2, Crown, LogOut, ChevronRight } from 'lucide-react';
+import { MapPin, Mail, Phone, Award, CheckCircle2, Edit2, Crown, LogOut, ChevronRight } from 'lucide-react';
 import useAuth from '../../context/useAuth';
-import { userService } from '../../services/mockServices';
-import { skillService } from '../../services/mockServices';
+import { userService } from '../../services/userService';
+import { skillService } from '../../services/skillService';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Modal from '../../components/ui/Modal';
@@ -18,7 +18,7 @@ const SeekerProfile = () => {
   const [loading, setLoading]     = useState(false);
 
   const [form, setForm] = useState({
-    name: '', email: '', bio: '', experienceYears: 0,
+    name: '', phone: '', bio: '', experienceYears: 0,
     availability: 'immediate', expectedSalaryMin: '', expectedSalaryMax: '',
     selectedSkills: [],
   });
@@ -26,10 +26,14 @@ const SeekerProfile = () => {
   useEffect(() => {
     if (user) {
       setForm({
-        name: user.name || '', email: user.email || '', bio: user.bio || '',
-        experienceYears: user.experienceYears || 0, availability: user.availability || 'immediate',
-        expectedSalaryMin: user.expectedSalaryMin || '', expectedSalaryMax: user.expectedSalaryMax || '',
-        selectedSkills: user.skills?.map(s => s.id) || [],
+        name:              user.name              || '',
+        phone:             user.phone             || '',
+        bio:               user.bio               || '',
+        experienceYears:   user.experienceYears   || 0,
+        availability:      user.availability      || 'immediate',
+        expectedSalaryMin: user.expectedSalaryMin || '',
+        expectedSalaryMax: user.expectedSalaryMax || '',
+        selectedSkills:    user.skills?.map(s => s.id) || [],
       });
     }
   }, [user]);
@@ -44,11 +48,14 @@ const SeekerProfile = () => {
     setLoading(true);
     try {
       await userService.updateProfile({
-        name: form.name, email: form.email, bio: form.bio,
-        experienceYears: form.experienceYears, availability: form.availability,
+        name:              form.name,
+        phone:             form.phone,
+        bio:               form.bio,
+        experienceYears:   form.experienceYears,
+        availability:      form.availability,
         expectedSalaryMin: form.expectedSalaryMin || null,
         expectedSalaryMax: form.expectedSalaryMax || null,
-        skills: form.selectedSkills.map(id => ({ skillId: id })),
+        skills:            form.selectedSkills.map(id => ({ skillId: id })),
       });
       await refreshUser();
       toast.success('Profile updated!');
@@ -58,9 +65,9 @@ const SeekerProfile = () => {
   };
 
   const UPSELLS = [
-    !isVerified    && { bg: '#eff6ff', fg: '#2563eb', icon: CheckCircle2, label: 'Get Verified Badge',   path: '/seeker/subscription' },
-    !hasExamPassed && { bg: '#fffbeb', fg: '#d97706', icon: Award,        label: 'Take Skill Exam',       path: '/seeker/exams' },
-    !isSubscribed  && { bg: '#faf5ff', fg: '#7c3aed', icon: Crown,        label: 'Upgrade to Premium',    path: '/seeker/subscription' },
+    !isVerified    && { key: 'verified',  bg: '#eff6ff', fg: '#2563eb', icon: CheckCircle2, label: 'Get Verified Badge', path: '/seeker/subscription' },
+    !hasExamPassed && { key: 'exam',      bg: '#fffbeb', fg: '#d97706', icon: Award,        label: 'Take Skill Exam',    path: '/seeker/exams' },
+    !isSubscribed  && { key: 'premium',   bg: '#faf5ff', fg: '#7c3aed', icon: Crown,        label: 'Upgrade to Premium', path: '/seeker/subscription' },
   ].filter(Boolean);
 
   return (
@@ -81,7 +88,8 @@ const SeekerProfile = () => {
               {isVerified    && <CheckCircle2 className="w-5 h-5 text-blue-500 flex-shrink-0" />}
               {hasExamPassed && <Award className="w-5 h-5 text-amber-500 flex-shrink-0" />}
             </div>
-            <p className="text-slate-400 text-sm">+91 {user?.mobile}</p>
+            <p className="text-slate-400 text-sm">{user?.email}</p>
+            {user?.phone && <p className="text-slate-400 text-sm">{user.phone}</p>}
             <span className={`badge mt-1.5 ${isSubscribed ? 'badge-green' : 'badge-gray'}`}>
               {isSubscribed ? '⭐ Premium' : 'Free Account'}
             </span>
@@ -104,8 +112,8 @@ const SeekerProfile = () => {
         </button>
 
         {/* Upsell cards */}
-        {UPSELLS.map(({ bg, fg, icon: Icon, label, path }) => (
-          <button key={path} onClick={() => navigate(path)}
+        {UPSELLS.map(({ key, bg, fg, icon: Icon, label, path }) => (
+          <button key={key} onClick={() => navigate(path)}
             className="card-elevated p-4 w-full flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -137,6 +145,12 @@ const SeekerProfile = () => {
             <Mail className="w-4 h-4 text-slate-300 flex-shrink-0" />
             {user?.email || 'Email not set'}
           </div>
+          {user?.phone && (
+            <div className="flex items-center gap-3 text-sm text-slate-500">
+              <Phone className="w-4 h-4 text-slate-300 flex-shrink-0" />
+              {user.phone}
+            </div>
+          )}
         </div>
 
         {/* Skills */}
@@ -162,14 +176,31 @@ const SeekerProfile = () => {
       {/* Edit Modal */}
       <Modal isOpen={showEdit} onClose={() => setShowEdit(false)} title="Edit Profile" size="lg">
         <div className="space-y-4">
+
           <Input label="Full Name" value={form.name} onChange={set('name')} />
-          <Input label="Email" type="email" value={form.email} onChange={set('email')} />
+
+          {/* Email — read only, Supabase se change nahi ho sakta */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5"
+              style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+              Email <span className="font-normal text-slate-400">(cannot be changed)</span>
+            </label>
+            <div className="input py-3 text-slate-400 text-sm bg-slate-50 cursor-not-allowed rounded-xl">
+              {user?.email}
+            </div>
+          </div>
+
+          {/* Phone — editable */}
+          <Input label="Phone Number" value={form.phone} onChange={set('phone')}
+            placeholder="9999999999" inputMode="tel" />
+
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5"
               style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>About You</label>
             <textarea value={form.bio} onChange={set('bio')} rows={3} className="input"
               placeholder="Tell employers about yourself..." />
           </div>
+
           <div className="grid grid-cols-2 gap-3">
             <Input type="number" label="Experience (yrs)" value={form.experienceYears}
               onChange={e => setForm(p => ({ ...p, experienceYears: parseInt(e.target.value) || 0 }))} />
@@ -181,6 +212,7 @@ const SeekerProfile = () => {
                 { value: 'not_available', label: 'Not available' },
               ]} />
           </div>
+
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2"
               style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Skills</label>
@@ -206,6 +238,7 @@ const SeekerProfile = () => {
               })}
             </div>
           </div>
+
           <button onClick={handleSave} disabled={loading}
             className="btn-primary w-full py-3.5 text-sm" style={{ borderRadius: '10px' }}>
             {loading

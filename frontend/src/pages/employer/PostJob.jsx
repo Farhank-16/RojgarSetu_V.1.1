@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Navigation, CheckCircle2, ArrowRight } from 'lucide-react';
-import { jobService } from '../../services/mockServices';
-import { skillService } from '../../services/mockServices';
+import { Navigation, CheckCircle2, ArrowRight, X } from 'lucide-react';
+import { jobService } from '../../services/jobService';
+import { skillService } from '../../services/skillService';
 import useAuth from '../../context/useAuth';
 import { useLocation as useGeoLocation } from '../../hooks/useLocation';
 import Input from '../../components/ui/Input';
@@ -33,14 +33,17 @@ const PostJob = () => {
   const { user }  = useAuth();
   const { getCurrentLocation, loading: locLoading } = useGeoLocation();
 
-  const [loading, setLoading] = useState(false);
-  const [skills, setSkills]   = useState([]);
+  const [loading, setLoading]       = useState(false);
+  const [skills, setSkills]         = useState([]);
+  const [selectedSkills, setSelectedSkills] = useState([]); // multi-skill
+  const [skillInput, setSkillInput] = useState('');         // dropdown value
+
   const [form, setForm] = useState({
-    title: '', description: '', skillId: '',
+    title: '', description: '',
     jobType: 'full_time', salaryMin: '', salaryMax: '', salaryType: 'monthly',
     area: user?.area || '', city: user?.city || '', state: user?.state || '',
     latitude: user?.latitude || null, longitude: user?.longitude || null,
-    radiusKm: 10, vacancies: 1, availabilityRequired: 'flexible',
+    vacancies: 1, availability: 'flexible',
     experienceRequired: 0, jobDuration: '',
   });
 
@@ -50,6 +53,22 @@ const PostJob = () => {
 
   const set  = k => e => setForm(p => ({ ...p, [k]: e.target.value }));
   const setN = k => e => setForm(p => ({ ...p, [k]: parseInt(e.target.value) || 0 }));
+
+  // Add skill to selected list
+  const addSkill = (e) => {
+    const id = parseInt(e.target.value);
+    if (!id) return;
+    if (selectedSkills.find(s => s.id === id)) {
+      toast('Skill already added');
+      setSkillInput('');
+      return;
+    }
+    const skill = skills.find(s => s.id === id);
+    if (skill) setSelectedSkills(p => [...p, skill]);
+    setSkillInput('');
+  };
+
+  const removeSkill = (id) => setSelectedSkills(p => p.filter(s => s.id !== id));
 
   const handleGetLocation = async () => {
     try {
@@ -61,22 +80,32 @@ const PostJob = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.title.trim()) return toast.error('Please enter job title');
+    if (!form.title.trim())               return toast.error('Please enter job title');
+    if (selectedSkills.length === 0)      return toast.error('Please select at least one skill');
     if (!form.latitude || !form.longitude) return toast.error('Please capture job location');
+      
+
     setLoading(true);
     try {
-      await jobService.createJob(form);
+      await jobService.createJob({
+        ...form,
+        skillIds: selectedSkills.map(s => s.id),  // array of skill IDs
+        skillId:  selectedSkills[0]?.id,           // primary skill (backward compat)
+      });
       toast.success('Job posted successfully!');
       navigate('/employer/jobs');
     } catch (err) { toast.error(err.response?.data?.error || 'Failed to post job'); }
     finally { setLoading(false); }
   };
 
+  // Skills not yet selected — for dropdown
+  const availableSkills = skills.filter(s => !selectedSkills.find(sel => sel.id === s.id));
+
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       <form onSubmit={handleSubmit} className="px-4 py-5 space-y-4">
 
-        <Section title=" Job Details">
+        <Section title="📋 Job Details">
           <Input label="Job Title *" value={form.title} onChange={set('title')} placeholder="e.g., Software Developer" />
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5"
@@ -84,8 +113,44 @@ const PostJob = () => {
             <textarea value={form.description} onChange={set('description')} rows={4} className="input"
               placeholder="Describe responsibilities, requirements..." />
           </div>
-          <Select label="Required Skill" value={form.skillId} onChange={set('skillId')}
-            options={skills.map(s => ({ value: s.id, label: s.name }))} placeholder="Select a skill" />
+
+          {/* Multi-skill selector */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5"
+              style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+              Required Skills * <span className="text-slate-400 font-normal">(add multiple)</span>
+            </label>
+
+            {/* Selected skill pills */}
+            {selectedSkills.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {selectedSkills.map(skill => (
+                  <span key={skill.id}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-display font-bold"
+                    style={{ background: '#eff6ff', color: '#1d4ed8' }}>
+                    {skill.name}
+                    <button type="button" onClick={() => removeSkill(skill.id)}
+                      className="w-3.5 h-3.5 flex items-center justify-center rounded-full hover:bg-blue-200 transition-colors">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Skill dropdown */}
+            <select
+              value={skillInput}
+              onChange={addSkill}
+              className="input w-full py-2.5 text-sm"
+              style={{ borderRadius: '10px' }}>
+              <option value="">+ Add a skill</option>
+              {availableSkills.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+
           <Select label="Job Type" value={form.jobType} onChange={set('jobType')}
             options={[
               { value: 'full_time',  label: 'Full Time' },
@@ -97,7 +162,7 @@ const PostJob = () => {
             placeholder="Select duration" options={DURATION_OPTIONS} />
         </Section>
 
-        <Section title=" Salary">
+        <Section title="💰 Salary">
           <div className="grid grid-cols-2 gap-3">
             <Input type="number" label="Minimum (₹)" value={form.salaryMin} onChange={set('salaryMin')} placeholder="10000" />
             <Input type="number" label="Maximum (₹)" value={form.salaryMax} onChange={set('salaryMax')} placeholder="15000" />
@@ -111,7 +176,7 @@ const PostJob = () => {
             ]} />
         </Section>
 
-        <Section title="Job Location">
+        <Section title="📍 Job Location">
           <button type="button" onClick={handleGetLocation} disabled={locLoading}
             className={`w-full py-3 rounded-xl border-2 font-display font-bold text-sm flex items-center justify-center gap-2 transition-all ${
               form.latitude
@@ -132,12 +197,14 @@ const PostJob = () => {
           <Input label="State" value={form.state} onChange={set('state')} placeholder="Enter state" />
         </Section>
 
-        <Section title="Requirements">
+        <Section title="📋 Requirements">
           <div className="grid grid-cols-2 gap-3">
-            <Input type="number" label="Vacancies"          value={form.vacancies}           onChange={e => setForm(p => ({ ...p, vacancies: parseInt(e.target.value) || 1 }))} min={1} />
-            <Input type="number" label="Experience (years)" value={form.experienceRequired}  onChange={setN('experienceRequired')} min={0} />
+            <Input type="number" label="Vacancies" value={form.vacancies}
+              onChange={e => setForm(p => ({ ...p, vacancies: parseInt(e.target.value) || 1 }))} min={1} />
+            <Input type="number" label="Experience (years)" value={form.experienceRequired}
+              onChange={setN('experienceRequired')} min={0} />
           </div>
-          <Select label="Candidate Availability" value={form.availabilityRequired} onChange={set('availabilityRequired')}
+          <Select label="Candidate Availability" value={form.availability} onChange={set('availability')}
             options={[
               { value: 'immediate',    label: 'Immediately' },
               { value: 'within_week',  label: 'Within a week' },

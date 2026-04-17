@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, MapPin, Users, Eye, Edit2, Trash2, MoreVertical, ChevronRight } from 'lucide-react';
-import { jobService } from '../../services/mockServices';
+import { jobService } from '../../services/jobService';
 import Modal from '../../components/ui/Modal';
 import EmptyState from '../../components/ui/EmptyState';
 import { SkeletonList } from '../../components/ui/Skeleton';
@@ -15,6 +15,7 @@ const MyJobs = () => {
   const [openMenu, setOpenMenu]     = useState(null);
   const [deleting, setDeleting]     = useState(false);
 
+  
   useEffect(() => {
     jobService.getMyJobs(1, 50)
       .then(({ jobs }) => setJobs(jobs))
@@ -90,9 +91,9 @@ const MyJobs = () => {
                           className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 hover:bg-slate-50">
                           <Edit2 className="w-3.5 h-3.5 text-slate-400" /> Edit
                         </button>
-                        <button onClick={() => toggleStatus(job)}
-                          className="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50">
-                          {job.is_active ? 'Deactivate' : 'Activate'}
+                        <button onClick={() => { toggleStatus(job); }}
+                          className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 hover:bg-slate-50">
+                          <span className="w-3.5 h-3.5 text-slate-400">●</span> {job.is_active ? 'Deactivate' : 'Activate'}
                         </button>
                         <button onClick={() => { setSelectedJob(job); setOpenMenu(null); }}
                           className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 hover:bg-red-50 text-red-500">

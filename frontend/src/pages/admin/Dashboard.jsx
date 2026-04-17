@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Briefcase, CreditCard, TrendingUp, UserPlus, IndianRupee, Activity } from 'lucide-react';
-import { adminService } from '../../services/mockServices';
+import { adminService } from '../../services/adminService';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
 const StatCard = ({ title, value, icon: Icon, bg, fg, onClick }) => (

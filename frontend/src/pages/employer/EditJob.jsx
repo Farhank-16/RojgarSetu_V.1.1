@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { jobService } from '../../services/mockServices';
-import { skillService } from '../../services/mockServices';
+import { jobService } from '../../services/jobService';
+import { skillService } from '../../services/skillService';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -31,12 +32,14 @@ const EditJob = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving]   = useState(false);
-  const [skills, setSkills]   = useState([]);
+  const [skills, setSkills]         = useState([]);
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  const [skillInput, setSkillInput]     = useState('');
   const [form, setForm] = useState({
     title: '', description: '', skillId: '', jobType: 'full_time',
     salaryMin: '', salaryMax: '', salaryType: 'monthly',
     area: '', city: '', state: '', vacancies: 1,
-    availabilityRequired: 'flexible', experienceRequired: 0,
+    availability: 'flexible', experienceRequired: 0,
     jobDuration: '', isActive: true,
   });
 
@@ -44,6 +47,13 @@ const EditJob = () => {
     Promise.all([jobService.getJob(id), skillService.getSkills()])
       .then(([job, { skills }]) => {
         setSkills(skills);
+        // Load existing skills for this job
+        if (job.skills && job.skills.length > 0) {
+          setSelectedSkills(job.skills);
+        } else if (job.skill_id) {
+          const primary = skills.find(s => s.id === job.skill_id);
+          if (primary) setSelectedSkills([primary]);
+        }
         setForm({
           title: job.title || '', description: job.description || '',
           skillId: job.skill_id || '', jobType: job.job_type || 'full_time',
@@ -51,7 +61,7 @@ const EditJob = () => {
           salaryType: job.salary_type || 'monthly',
           area: job.area || '', city: job.city || '', state: job.state || '',
           vacancies: job.vacancies || 1,
-          availabilityRequired: job.availability_required || 'flexible',
+          availability: job.availability || 'flexible',
           experienceRequired: job.experience_required || 0,
           jobDuration: job.job_duration || '', isActive: job.is_active,
         });
@@ -66,7 +76,7 @@ const EditJob = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      await jobService.updateJob(id, form);
+      await jobService.updateJob(id, { ...form, skillIds: selectedSkills.map(s => s.id), skillId: selectedSkills[0]?.id });
       toast.success('Job updated!');
       navigate('/employer/jobs');
     } catch { toast.error('Failed to update job'); }
@@ -79,15 +89,51 @@ const EditJob = () => {
     <div className="min-h-screen bg-slate-50 pb-20">
       <form onSubmit={handleSubmit} className="px-4 py-5 space-y-4">
 
-        <Section title=" Job Details">
+        <Section title="📋 Job Details">
           <Input label="Job Title *" value={form.title} onChange={set('title')} />
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5"
               style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Description</label>
             <textarea value={form.description} onChange={set('description')} rows={4} className="input" />
           </div>
-          <Select label="Required Skill" value={form.skillId} onChange={set('skillId')}
-            options={skills.map(s => ({ value: s.id, label: s.name }))} placeholder="Select skill" />
+          {/* Multi-skill selector */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5"
+              style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+              Required Skills <span className="text-slate-400 font-normal">(add multiple)</span>
+            </label>
+            {selectedSkills.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {selectedSkills.map(skill => (
+                  <span key={skill.id}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-display font-bold"
+                    style={{ background: '#eff6ff', color: '#1d4ed8' }}>
+                    {skill.name}
+                    <button type="button"
+                      onClick={() => setSelectedSkills(p => p.filter(s => s.id !== skill.id))}
+                      className="w-3.5 h-3.5 flex items-center justify-center rounded-full hover:bg-blue-200 transition-colors">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <select value={skillInput}
+              onChange={e => {
+                const id = parseInt(e.target.value);
+                if (!id) return;
+                if (selectedSkills.find(s => s.id === id)) { toast('Already added'); setSkillInput(''); return; }
+                const skill = skills.find(s => s.id === id);
+                if (skill) setSelectedSkills(p => [...p, skill]);
+                setSkillInput('');
+              }}
+              className="input w-full py-2.5 text-sm" style={{ borderRadius: '10px' }}>
+              <option value="">+ Add a skill</option>
+              {skills.filter(s => !selectedSkills.find(sel => sel.id === s.id)).map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
           <Select label="Job Type" value={form.jobType} onChange={set('jobType')}
             options={[
               { value: 'full_time',  label: 'Full Time' },
@@ -114,7 +160,7 @@ const EditJob = () => {
           </div>
         </Section>
 
-        <Section title=" Salary">
+        <Section title="💰 Salary">
           <div className="grid grid-cols-2 gap-3">
             <Input type="number" label="Minimum (₹)" value={form.salaryMin} onChange={set('salaryMin')} />
             <Input type="number" label="Maximum (₹)" value={form.salaryMax} onChange={set('salaryMax')} />
@@ -128,7 +174,7 @@ const EditJob = () => {
             ]} />
         </Section>
 
-        <Section title=" Location">
+        <Section title="📍 Location">
           <div className="grid grid-cols-2 gap-3">
             <Input label="Area"  value={form.area}  onChange={set('area')} />
             <Input label="City"  value={form.city}  onChange={set('city')} />
@@ -136,12 +182,12 @@ const EditJob = () => {
           <Input label="State" value={form.state} onChange={set('state')} />
         </Section>
 
-        <Section title=" Requirements">
+        <Section title="📋 Requirements">
           <div className="grid grid-cols-2 gap-3">
             <Input type="number" label="Vacancies"          value={form.vacancies}          onChange={e => setForm(p => ({ ...p, vacancies: parseInt(e.target.value) || 1 }))} min={1} />
             <Input type="number" label="Experience (years)" value={form.experienceRequired} onChange={e => setForm(p => ({ ...p, experienceRequired: parseInt(e.target.value) || 0 }))} min={0} />
           </div>
-          <Select label="Availability Required" value={form.availabilityRequired} onChange={set('availabilityRequired')}
+          <Select label="Availability Required" value={form.availability} onChange={set('availability')}
             options={[
               { value: 'immediate',    label: 'Immediately' },
               { value: 'within_week',  label: 'Within a week' },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminService } from '../../services/mockServices';
+import { adminService } from '../../services/adminService';
 import { SkeletonList } from '../../components/ui/Skeleton';
 
 const STATUS_STYLE = {

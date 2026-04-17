@@ -1,10 +1,14 @@
-import api from "./api";
+import { supabase } from './supabase';
 
 export const skillService = {
-  getSkills: (category) =>
-    api
-      .get(`/skills${category ? `?category=${category}` : ""}`)
-      .then((r) => r.data),
+  getSkills: async () => {
+    const { data, error } = await supabase
+      .from('skills')
+      .select('*')
+      .eq('is_active', true)
+      .order('name');
 
-  getCategories: () => api.get("/skills/categories").then((r) => r.data),
+    if (error) throw error;
+    return { skills: data || [] };
+  },
 };
