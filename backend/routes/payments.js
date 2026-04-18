@@ -1,21 +1,18 @@
-const express = require("express");
-const router = express.Router();
-const payment = require("../controllers/paymentController");
-const { authenticate } = require("../middleware/auth");
-const { paymentLimiter } = require("../middleware/rateLimit");
+const express = require('express');
+const router  = express.Router();
+const { authenticate } = require('../middleware/auth');
+const {
+  createSubscriptionOrder,
+  createExamOrder,
+  createBadgeOrder,
+  verifyPayment,
+  getPaymentHistory,
+} = require('../controllers/paymentController');
 
-const auth = [authenticate];
-const authLimited = [authenticate, paymentLimiter];
-
-router.post(
-  "/subscription/create",
-  ...authLimited,
-  payment.createSubscriptionOrder,
-);
-router.post("/exam/create", ...authLimited, payment.createExamOrder);
-router.post("/badge/create", ...authLimited, payment.createBadgeOrder);
-router.post("/verify", ...auth, payment.verifyPayment);
-router.get("/history", ...auth, payment.getPaymentHistory);
-router.get("/subscription/status", ...auth, payment.getSubscriptionStatus);
+router.post('/subscription/create', authenticate, createSubscriptionOrder);
+router.post('/exam/create',         authenticate, createExamOrder);
+router.post('/badge/create',        authenticate, createBadgeOrder);
+router.post('/verify',              authenticate, verifyPayment);
+router.get('/history',              authenticate, getPaymentHistory);
 
 module.exports = router;

@@ -179,4 +179,29 @@ const getPaymentHistory = async (req, res) => {
   }
 };
 
-module.exports = { createSubscriptionOrder, createExamOrder, createBadgeOrder, verifyPayment, getPaymentHistory };
+
+const getSubscriptionStatus = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('subscription_status, subscription_end')
+      .eq('id', req.user.id)
+      .single();
+    if (error) throw error;
+    res.json({
+      status:  data?.subscription_status || 'free',
+      endDate: data?.subscription_end    || null,
+      prices: {
+        firstMonth: config.prices.subscriptionFirstMonth / 100,
+        regular:    config.prices.subscriptionRegular    / 100,
+        exam:       config.prices.skillExam              / 100,
+        badge:      config.prices.verifiedBadge          / 100,
+      },
+    });
+  } catch (error) {
+    console.error('Get Subscription Status Error:', error);
+    res.status(500).json({ error: 'Failed to get subscription status' });
+  }
+};
+
+module.exports = { createSubscriptionOrder, createExamOrder, createBadgeOrder, verifyPayment, getPaymentHistory, getSubscriptionStatus };
