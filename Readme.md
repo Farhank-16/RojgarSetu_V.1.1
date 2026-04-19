@@ -65,8 +65,8 @@ jobnest/
 │
 └── backend/                     # Express server (Razorpay only)
     ├── config/
-    │   ├── config.js
-    │   └── database.js          # MySQL (legacy, kept for payments)
+    │   └── config.js
+    │   
     ├── controllers/
     │   ├── adminController.js   # Admin stats
     │   ├── examController.js    # Exam submit/grade
