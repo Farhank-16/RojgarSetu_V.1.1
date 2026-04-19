@@ -1,148 +1,147 @@
-const db = require('../config/database');
+const { createClient } = require('@supabase/supabase-js');
+const config = require('../config/config');
+
+const supabase = createClient(config.supabase.url, config.supabase.serviceKey);
 
 const getPagination = (queryPage, queryLimit) => {
-  const page   = Math.max(1, parseInt(queryPage, 10) || 1);
-  const limit  = Math.min(100, Math.max(1, parseInt(queryLimit, 10) || 20));
-  const offset = (page - 1) * limit;
-  return { page, limit, offset };
+  const page  = Math.max(1, parseInt(queryPage) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(queryLimit) || 20));
+  const from  = (page - 1) * limit;
+  const to    = from + limit - 1;
+  return { page, limit, from, to };
 };
 
-// Note: db.query() used for paginated queries to avoid prepared-statement
-// type issues with LIMIT/OFFSET in some mysql2 versions.
-
+// ── Dashboard Stats ───────────────────────────────────────────────
 const getDashboardStats = async (req, res) => {
   try {
-    const [[userStats]] = await db.execute(`
-      SELECT 
-        COUNT(*) as total,
-        SUM(role = 'job_seeker') as jobSeekers,
-        SUM(role = 'employer') as employers,
-        SUM(subscription_status = 'active') as activeSubscriptions,
-        SUM(is_verified = TRUE) as verifiedUsers,
-        SUM(created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as newThisWeek
-      FROM users WHERE role != 'admin'
-    `);
+    const [
+      { count: totalUsers },
+      { count: seekers },
+      { count: employers },
+      { count: activeSubs },
+      { count: verified },
+      { count: totalJobs },
+      { count: activeJobs },
+      { count: totalApplications },
+      { count: totalPayments },
+    ] = await Promise.all([
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).neq('role', 'admin'),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'job_seeker'),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'employer'),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('subscription_status', 'active'),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('is_verified', true),
+      supabase.from('jobs').select('*', { count: 'exact', head: true }),
+      supabase.from('jobs').select('*', { count: 'exact', head: true }).eq('is_active', true),
+      supabase.from('applications').select('*', { count: 'exact', head: true }),
+      supabase.from('payments').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
+    ]);
 
-    const [[jobStats]] = await db.execute(`
-      SELECT COUNT(*) as total, SUM(is_active = TRUE) as active,
-             SUM(applications_count) as totalApplications
-      FROM jobs
-    `);
+    // Revenue calc
+    const { data: payments } = await supabase
+      .from('payments')
+      .select('amount')
+      .eq('status', 'completed');
+    const revenue = payments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
 
-    const [[paymentStats]] = await db.execute(`
-      SELECT COUNT(*) as total,
-        SUM(IF(status = 'completed', amount, 0)) as totalRevenue,
-        SUM(IF(status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY), amount, 0)) as monthlyRevenue
-      FROM payments
-    `);
-
-    res.json({ users: userStats, jobs: jobStats, payments: paymentStats });
+    res.json({
+      totalUsers, seekers, employers, activeSubs,
+      verifiedUsers: verified, totalJobs, activeJobs,
+      totalApplications, totalPayments, revenue,
+    });
   } catch (error) {
-    console.error('Get Dashboard Stats Error:', error);
+    console.error('Dashboard Stats Error:', error);
     res.status(500).json({ error: 'Failed to get stats' });
   }
 };
 
+// ── Get Users ─────────────────────────────────────────────────────
 const getUsers = async (req, res) => {
   try {
-    const { page, limit, offset } = getPagination(req.query.page, req.query.limit);
-    const { role, search } = req.query;
+    const { page, limit, from, to } = getPagination(req.query.page, req.query.limit);
+    const { search, role } = req.query;
 
-    let query = `
-      SELECT id, mobile, name, email, role, area, city,
-             is_verified, exam_passed, subscription_status,
-             profile_completed, is_active, created_at
-      FROM users WHERE role != 'admin'
-    `;
-    const params = [];
+    let query = supabase
+      .from('profiles')
+      .select('id, name, email, phone, role, city, area, is_active, is_verified, subscription_status, subscription_end, profile_completed, created_at', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
-    if (role)   { query += ` AND role = ?`;                                          params.push(role); }
-    if (search) { query += ` AND (name LIKE ? OR mobile LIKE ? OR city LIKE ?)`;     params.push(`%${search}%`, `%${search}%`, `%${search}%`); }
+    if (role)   query = query.eq('role', role);
+    if (search) query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`);
 
-    query += ` ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
-    const [users] = await db.query(query, params);
+    const { data, count, error } = await query;
+    if (error) throw error;
 
-    let countQuery  = `SELECT COUNT(*) as count FROM users WHERE role != 'admin'`;
-    const countParams = [];
-    if (role) { countQuery += ` AND role = ?`; countParams.push(role); }
-    const [total] = await db.query(countQuery, countParams);
-
-    res.json({ users, pagination: { page, limit, total: total[0].count, pages: Math.ceil(total[0].count / limit) } });
+    res.json({
+      users: data || [],
+      pagination: { page, limit, total: count, pages: Math.ceil(count / limit) },
+    });
   } catch (error) {
     console.error('Get Users Error:', error);
     res.status(500).json({ error: 'Failed to get users' });
   }
 };
 
+// ── Update User Status ────────────────────────────────────────────
 const updateUserStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { isActive, isVerified } = req.body;
 
-    const fields = [];
-    const params = [];
+    const updates = {};
+    if (isActive   !== undefined) updates.is_active   = isActive;
+    if (isVerified !== undefined) updates.is_verified = isVerified;
 
-    if (isActive   !== undefined) { fields.push('is_active = ?');   params.push(isActive); }
-    if (isVerified !== undefined) { fields.push('is_verified = ?'); params.push(isVerified); }
+    if (!Object.keys(updates).length)
+      return res.status(400).json({ error: 'No fields to update' });
 
-    if (!fields.length) return res.status(400).json({ error: 'No fields to update' });
+    const { error } = await supabase.from('profiles').update(updates).eq('id', id);
+    if (error) throw error;
 
-    params.push(id);
-    await db.execute(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, params);
-
-    await db.execute(
-      `INSERT INTO admin_logs (admin_id, action, entity_type, entity_id, details)
-       VALUES (?, 'update_user_status', 'user', ?, ?)`,
-      [req.user.id, id, JSON.stringify({ isActive, isVerified })]
-    );
-
-    res.json({ success: true, message: 'User updated' });
+    res.json({ success: true, message: `User updated` });
   } catch (error) {
-    console.error('Update User Status Error:', error);
+    console.error('Update User Error:', error);
     res.status(500).json({ error: 'Failed to update user' });
   }
 };
 
-const getAllJobs = async (req, res) => {
+// ── Get All Jobs ──────────────────────────────────────────────────
+const getJobs = async (req, res) => {
   try {
-    const { page, limit, offset } = getPagination(req.query.page, req.query.limit);
-    const { status, search } = req.query;
+    const { page, limit, from, to } = getPagination(req.query.page, req.query.limit);
+    const { status } = req.query;
 
-    let query = `
-      SELECT j.*, u.name as employer_name, s.name as skill_name
-      FROM jobs j
-      LEFT JOIN users u  ON j.employer_id = u.id
-      LEFT JOIN skills s ON j.skill_id = s.id
-      WHERE 1=1
-    `;
-    const params = [];
+    let query = supabase
+      .from('jobs')
+      .select('id, title, city, area, job_type, is_active, views_count, applications_count, created_at, profiles!employer_id(name)', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
-    if (status === 'active')   query += ` AND j.is_active = TRUE`;
-    if (status === 'inactive') query += ` AND j.is_active = FALSE`;
-    if (search) { query += ` AND (j.title LIKE ? OR j.city LIKE ?)`; params.push(`%${search}%`, `%${search}%`); }
+    if (status === 'active')   query = query.eq('is_active', true);
+    if (status === 'inactive') query = query.eq('is_active', false);
 
-    query += ` ORDER BY j.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
-    const [jobs] = await db.query(query, params);
+    const { data, count, error } = await query;
+    if (error) throw error;
 
-    const [[total]] = await db.execute('SELECT COUNT(*) as count FROM jobs');
-
-    res.json({ jobs, pagination: { page, limit, total: total.count, pages: Math.ceil(total.count / limit) } });
+    res.json({
+      jobs: (data || []).map(j => ({ ...j, employer_name: j.profiles?.name })),
+      pagination: { page, limit, total: count, pages: Math.ceil(count / limit) },
+    });
   } catch (error) {
-    console.error('Get All Jobs Error:', error);
+    console.error('Get Jobs Error:', error);
     res.status(500).json({ error: 'Failed to get jobs' });
   }
 };
 
+// ── Skills ────────────────────────────────────────────────────────
 const getSkills = async (req, res) => {
   try {
-    const [skills] = await db.execute(`
-      SELECT s.*,
-        (SELECT COUNT(*) FROM user_skills WHERE skill_id = s.id) as users_count,
-        (SELECT COUNT(*) FROM jobs       WHERE skill_id = s.id) as jobs_count,
-        (SELECT COUNT(*) FROM exams      WHERE skill_id = s.id) as questions_count
-      FROM skills s ORDER BY s.name
-    `);
-    res.json({ skills });
+    const { data, error } = await supabase
+      .from('skills')
+      .select('*')
+      .order('name');
+    if (error) throw error;
+    res.json({ skills: data });
   } catch (error) {
     console.error('Get Skills Error:', error);
     res.status(500).json({ error: 'Failed to get skills' });
@@ -151,15 +150,16 @@ const getSkills = async (req, res) => {
 
 const createSkill = async (req, res) => {
   try {
-    const { name, category, description, icon } = req.body;
-    if (!name) return res.status(400).json({ error: 'Skill name required' });
+    const { name, category, description } = req.body;
+    if (!name) return res.status(400).json({ error: 'Name required' });
 
-    const [result] = await db.execute(
-      `INSERT INTO skills (name, category, description, icon) VALUES (?, ?, ?, ?)`,
-      [name, category ?? null, description ?? null, icon ?? null]
-    );
-
-    res.status(201).json({ success: true, skill: { id: result.insertId, name, category, description, icon } });
+    const { data, error } = await supabase
+      .from('skills')
+      .insert({ name, category, description })
+      .select()
+      .single();
+    if (error) throw error;
+    res.status(201).json({ success: true, skill: data });
   } catch (error) {
     console.error('Create Skill Error:', error);
     res.status(500).json({ error: 'Failed to create skill' });
@@ -168,68 +168,70 @@ const createSkill = async (req, res) => {
 
 const updateSkill = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, category, description, icon, isActive } = req.body;
+    const { name, category, description, isActive } = req.body;
+    const updates = {};
+    if (name        !== undefined) updates.name        = name;
+    if (category    !== undefined) updates.category    = category;
+    if (description !== undefined) updates.description = description;
+    if (isActive    !== undefined) updates.is_active   = isActive;
 
-    const fields = [];
-    const params = [];
-
-    if (name        !== undefined) { fields.push('name = ?');        params.push(name); }
-    if (category    !== undefined) { fields.push('category = ?');    params.push(category); }
-    if (description !== undefined) { fields.push('description = ?'); params.push(description); }
-    if (icon        !== undefined) { fields.push('icon = ?');        params.push(icon); }
-    if (isActive    !== undefined) { fields.push('is_active = ?');   params.push(isActive); }
-
-    if (!fields.length) return res.status(400).json({ error: 'No fields to update' });
-
-    params.push(id);
-    await db.execute(`UPDATE skills SET ${fields.join(', ')} WHERE id = ?`, params);
-
-    res.json({ success: true, message: 'Skill updated' });
+    const { error } = await supabase.from('skills').update(updates).eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
   } catch (error) {
     console.error('Update Skill Error:', error);
     res.status(500).json({ error: 'Failed to update skill' });
   }
 };
 
+const deleteSkill = async (req, res) => {
+  try {
+    const { error } = await supabase.from('skills').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true, message: 'Skill deleted' });
+  } catch (error) {
+    console.error('Delete Skill Error:', error);
+    res.status(500).json({ error: 'Failed to delete skill' });
+  }
+};
+
+// ── Questions ─────────────────────────────────────────────────────
 const getQuestions = async (req, res) => {
   try {
-    const skillId = req.query.skillId ? Number(req.query.skillId) : null;
+    const { skillId } = req.query;
+    if (!skillId) return res.status(400).json({ error: 'skillId required' });
 
-    let query = `
-      SELECT e.*, s.name as skill_name
-      FROM exams e LEFT JOIN skills s ON e.skill_id = s.id
-      WHERE 1=1
-    `;
-    const params = [];
-
-    if (skillId) { query += ` AND e.skill_id = ?`; params.push(skillId); }
-    query += ` ORDER BY s.name ASC, e.id ASC`;   // ← LIMIT HATA DIYA
-
-    const [questions] = await db.query(query, params);
-    res.json({ questions, total: questions.length });
+    const { data, error } = await supabase
+      .from('exams')
+      .select('*')
+      .eq('skill_id', skillId)
+      .order('id');
+    if (error) throw error;
+    res.json({ questions: data });
   } catch (error) {
     console.error('Get Questions Error:', error);
     res.status(500).json({ error: 'Failed to get questions' });
   }
 };
 
-
 const createQuestion = async (req, res) => {
   try {
     const { skillId, question, optionA, optionB, optionC, optionD, correctOption, difficulty } = req.body;
+    if (!skillId || !question || !correctOption)
+      return res.status(400).json({ error: 'skillId, question, correctOption required' });
 
-    if (!skillId || !question || !optionA || !optionB || !optionC || !optionD || !correctOption) {
-      return res.status(400).json({ error: 'All fields are required' });
-    }
-
-    const [result] = await db.execute(
-      `INSERT INTO exams (skill_id, question, option_a, option_b, option_c, option_d, correct_option, difficulty)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [skillId, question, optionA, optionB, optionC, optionD, correctOption, difficulty || 'medium']
-    );
-
-    res.status(201).json({ success: true, questionId: result.insertId });
+    const { data, error } = await supabase.from('exams').insert({
+      skill_id:       parseInt(skillId),
+      question,
+      option_a:       optionA,
+      option_b:       optionB,
+      option_c:       optionC,
+      option_d:       optionD,
+      correct_option: correctOption,
+      difficulty:     difficulty || 'medium',
+    }).select().single();
+    if (error) throw error;
+    res.status(201).json({ success: true, question: data });
   } catch (error) {
     console.error('Create Question Error:', error);
     res.status(500).json({ error: 'Failed to create question' });
@@ -238,27 +240,19 @@ const createQuestion = async (req, res) => {
 
 const updateQuestion = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { question, optionA, optionB, optionC, optionD, correctOption, difficulty, isActive } = req.body;
+    const { question, optionA, optionB, optionC, optionD, correctOption, difficulty } = req.body;
+    const updates = {};
+    if (question      !== undefined) updates.question       = question;
+    if (optionA       !== undefined) updates.option_a       = optionA;
+    if (optionB       !== undefined) updates.option_b       = optionB;
+    if (optionC       !== undefined) updates.option_c       = optionC;
+    if (optionD       !== undefined) updates.option_d       = optionD;
+    if (correctOption !== undefined) updates.correct_option = correctOption;
+    if (difficulty    !== undefined) updates.difficulty     = difficulty;
 
-    const fields = [];
-    const params = [];
-
-    if (question      !== undefined) { fields.push('question = ?');       params.push(question); }
-    if (optionA       !== undefined) { fields.push('option_a = ?');       params.push(optionA); }
-    if (optionB       !== undefined) { fields.push('option_b = ?');       params.push(optionB); }
-    if (optionC       !== undefined) { fields.push('option_c = ?');       params.push(optionC); }
-    if (optionD       !== undefined) { fields.push('option_d = ?');       params.push(optionD); }
-    if (correctOption !== undefined) { fields.push('correct_option = ?'); params.push(correctOption); }
-    if (difficulty    !== undefined) { fields.push('difficulty = ?');     params.push(difficulty); }
-    if (isActive      !== undefined) { fields.push('is_active = ?');      params.push(isActive); }
-
-    if (!fields.length) return res.status(400).json({ error: 'No fields to update' });
-
-    params.push(id);
-    await db.execute(`UPDATE exams SET ${fields.join(', ')} WHERE id = ?`, params);
-
-    res.json({ success: true, message: 'Question updated' });
+    const { error } = await supabase.from('exams').update(updates).eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
   } catch (error) {
     console.error('Update Question Error:', error);
     res.status(500).json({ error: 'Failed to update question' });
@@ -267,94 +261,40 @@ const updateQuestion = async (req, res) => {
 
 const deleteQuestion = async (req, res) => {
   try {
-    await db.execute('DELETE FROM exams WHERE id = ?', [req.params.id]);
-    res.json({ success: true, message: 'Question deleted' });
+    const { error } = await supabase.from('exams').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
   } catch (error) {
     console.error('Delete Question Error:', error);
     res.status(500).json({ error: 'Failed to delete question' });
   }
 };
 
+// ── Payments (Admin view) ─────────────────────────────────────────
 const getPayments = async (req, res) => {
   try {
-    const { page, limit, offset } = getPagination(req.query.page, req.query.limit);
-    const { status, type } = req.query;
+    const { page, limit, from, to } = getPagination(req.query.page, req.query.limit);
 
-    let query = `
-      SELECT p.*, u.name as user_name, u.mobile as user_mobile
-      FROM payments p LEFT JOIN users u ON p.user_id = u.id
-      WHERE 1=1
-    `;
-    const params = [];
+    const { data, count, error } = await supabase
+      .from('payments')
+      .select('*, profiles!user_id(name, email)', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
+    if (error) throw error;
 
-    if (status) { query += ` AND p.status = ?`;       params.push(status); }
-    if (type)   { query += ` AND p.payment_type = ?`; params.push(type); }
-
-    query += ` ORDER BY p.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
-    const [payments] = await db.query(query, params);
-
-    const [[total]] = await db.execute('SELECT COUNT(*) as count FROM payments');
-
-    res.json({ payments, pagination: { page, limit, total: total.count, pages: Math.ceil(total.count / limit) } });
+    res.json({
+      payments: (data || []).map(p => ({ ...p, user_name: p.profiles?.name, user_email: p.profiles?.email })),
+      pagination: { page, limit, total: count, pages: Math.ceil(count / limit) },
+    });
   } catch (error) {
     console.error('Get Payments Error:', error);
     res.status(500).json({ error: 'Failed to get payments' });
   }
 };
 
-const generateReport = async (req, res) => {
-  try {
-    const { type, startDate, endDate } = req.query;
-    const start = startDate || '2020-01-01';
-    const end   = endDate   || new Date().toISOString();
-
-    let report;
-
-    switch (type) {
-      case 'users':
-        [report] = await db.execute(`
-          SELECT DATE(created_at) as date, COUNT(*) as total,
-            SUM(role = 'job_seeker') as job_seekers,
-            SUM(role = 'employer') as employers
-          FROM users WHERE created_at BETWEEN ? AND ?
-          GROUP BY DATE(created_at) ORDER BY date
-        `, [start, end]);
-        break;
-
-      case 'revenue':
-        [report] = await db.execute(`
-          SELECT DATE(created_at) as date, SUM(amount) as total_revenue,
-            SUM(IF(payment_type = 'subscription',   amount, 0)) as subscription_revenue,
-            SUM(IF(payment_type = 'skill_exam',     amount, 0)) as exam_revenue,
-            SUM(IF(payment_type = 'verified_badge', amount, 0)) as badge_revenue
-          FROM payments WHERE status = 'completed' AND created_at BETWEEN ? AND ?
-          GROUP BY DATE(created_at) ORDER BY date
-        `, [start, end]);
-        break;
-
-      case 'jobs':
-        [report] = await db.execute(`
-          SELECT DATE(created_at) as date, COUNT(*) as jobs_posted,
-            SUM(applications_count) as total_applications
-          FROM jobs WHERE created_at BETWEEN ? AND ?
-          GROUP BY DATE(created_at) ORDER BY date
-        `, [start, end]);
-        break;
-
-      default:
-        return res.status(400).json({ error: 'Invalid report type' });
-    }
-
-    res.json({ report });
-  } catch (error) {
-    console.error('Generate Report Error:', error);
-    res.status(500).json({ error: 'Failed to generate report' });
-  }
-};
-
 module.exports = {
   getDashboardStats, getUsers, updateUserStatus,
-  getAllJobs, getSkills, createSkill, updateSkill,
+  getJobs, getSkills, createSkill, updateSkill, deleteSkill,
   getQuestions, createQuestion, updateQuestion, deleteQuestion,
-  getPayments, generateReport,
+  getPayments,
 };
