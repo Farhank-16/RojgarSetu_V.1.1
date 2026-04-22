@@ -117,12 +117,6 @@ FRONTEND_URL=https://your-app.netlify.app
 SUPABASE_URL=https://xxxx.supabase.co
 SUPABASE_SERVICE_KEY=eyJhbGc...   # service_role key
 
-# MySQL (for payment history)
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_password
-DB_NAME=jobnest_db
-
 # Razorpay
 RAZORPAY_KEY_ID=rzp_live_xxxx
 RAZORPAY_KEY_SECRET=xxxx
@@ -164,7 +158,7 @@ npm run dev        # http://localhost:5173
 # Backend
 cd backend
 npm install
-npm run dev        # http://localhost:5000
+npm start       # http://localhost:5000
 ```
 
 ---
