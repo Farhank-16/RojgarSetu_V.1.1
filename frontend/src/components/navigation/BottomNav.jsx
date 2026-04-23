@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Search, Briefcase, User, Users, CreditCard } from 'lucide-react';
+import { Home, Search, Briefcase, User, Users, CreditCard, Megaphone } from 'lucide-react';
 import useAuth from '../../context/useAuth';
 
 const NAV = {
@@ -17,10 +17,11 @@ const NAV = {
     { path: '/employer/profile',    icon: User,      label: 'Profile' },
   ],
   admin: [
-    { path: '/admin',               icon: Home,      label: 'Dashboard' },
-    { path: '/admin/users',         icon: Users,     label: 'Users' },
-    { path: '/admin/jobs',          icon: Briefcase, label: 'Jobs' },
-    { path: '/admin/payments',      icon: CreditCard,label: 'Payments' },
+    { path: '/admin',               icon: Home,       label: 'Dashboard' },
+    { path: '/admin/users',         icon: Users,      label: 'Users' },
+    { path: '/admin/jobs',          icon: Briefcase,  label: 'Jobs' },
+    { path: '/admin/payments',      icon: CreditCard, label: 'Payments' },
+    { path: '/admin/ads',           icon: Megaphone,  label: 'Ads' },
   ],
 };
 

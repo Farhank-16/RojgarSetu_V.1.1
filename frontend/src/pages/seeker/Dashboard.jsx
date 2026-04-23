@@ -5,6 +5,7 @@ import useAuth from '../../context/useAuth';
 import { jobService } from '../../services/jobService';
 import JobCard from '../../components/cards/JobCard';
 import { SkeletonList } from '../../components/ui/Skeleton';
+import { BottomBannerAd } from '../../components/ads/AdBanner';
 
 const SeekerDashboard = () => {
   const { user, isSubscribed, isVerified, hasExamPassed } = useAuth();
@@ -38,7 +39,7 @@ const SeekerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
-
+     
       {/* Welcome banner */}
       <div className="bg-brand px-5 pt-6 pb-12 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white opacity-[0.05] -translate-y-16 translate-x-16" />
@@ -131,6 +132,7 @@ const SeekerDashboard = () => {
           </div>
         )}
       </div>
+      <BottomBannerAd />
     </div>
   );
 };

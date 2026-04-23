@@ -35,6 +35,7 @@ const AdminJobs         = lazy(() => import('./pages/admin/Jobs'));
 const AdminSkills       = lazy(() => import('./pages/admin/Skills'));
 const AdminQuestions    = lazy(() => import('./pages/admin/Questions'));
 const AdminPayments     = lazy(() => import('./pages/admin/Payments'));
+const AdminAds          = lazy(() => import('./pages/admin/Ads'));
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
@@ -102,6 +103,7 @@ function App() {
             <Route path="skills"    element={<AdminSkills />} />
             <Route path="questions" element={<AdminQuestions />} />
             <Route path="payments"  element={<AdminPayments />} />
+            <Route path="ads"        element={<AdminAds />} />
           </Route>
 
           <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
