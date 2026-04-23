@@ -23,6 +23,8 @@ const MainLayout = () => {
         </div>
       )}
 
+      
+
       {showAds && <BottomBannerAd />}
       <BottomNav />
     </div>

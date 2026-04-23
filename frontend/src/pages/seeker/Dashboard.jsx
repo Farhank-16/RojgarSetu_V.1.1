@@ -5,7 +5,7 @@ import useAuth from '../../context/useAuth';
 import { jobService } from '../../services/jobService';
 import JobCard from '../../components/cards/JobCard';
 import { SkeletonList } from '../../components/ui/Skeleton';
-import { BottomBannerAd } from '../../components/ads/AdBanner';
+import { BottomBannerAd, MiddleSectionAd } from '../../components/ads/AdBanner';
 
 const SeekerDashboard = () => {
   const { user, isSubscribed, isVerified, hasExamPassed } = useAuth();
@@ -113,7 +113,7 @@ const SeekerDashboard = () => {
           <button onClick={() => navigate('/seeker/jobs')}
             className="text-xs text-blue-600 font-semibold">See all</button>
         </div>
-
+        {/* <MiddleSectionAd /> */}
         {loading ? <SkeletonList count={3} /> : jobs.length > 0 ? (
           <div className="space-y-3">
             {jobs.slice(0, 5).map(job => <JobCard key={job.id} job={job} />)}
@@ -132,7 +132,7 @@ const SeekerDashboard = () => {
           </div>
         )}
       </div>
-      <BottomBannerAd />
+      {/* <BottomBannerAd /> */}
     </div>
   );
 };
