@@ -69,19 +69,22 @@ export const TopBannerAd = () => {
       <a href={ad.redirect_url || '#'} target="_blank" rel="noopener noreferrer"
         className="block w-full h-full">
         {/* Ad image/video with 75% opacity — content visible underneath */}
-        <div className="w-full h-full" style={{ opacity: 0.72 }}>
+        <div className="w-full h-full" style={{ opacity: 0.82 }}>
           <AdMedia ad={ad} />
         </div>
         {/* Extra semi-transparent dark layer for readability */}
-        <div className="absolute inset-0"
-          style={{ background: 'rgba(0,0,0,0.18)' }} />
+        {/* <div className="absolute inset-0"
+          style={{ background: 'rgba(0,0,0,0.18)' }} /> */}
+          
         {/* Ad title at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 px-3 py-1.5 flex items-center justify-between"
-          style={{ background: 'rgba(0,0,0,0.25)' }}>
-          <p className="text-white text-xs font-semibold truncate pr-2"
-            style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>{ad.title}</p>
-          <span className="text-white/60 flex-shrink-0" style={{ fontSize: '9px' }}>Ad</span>
-        </div>
+         <div
+      className="absolute bottom-1 left-2 right-2 pointer-events-none"
+      style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+    >
+      <p className="text-white text-md font-semibold truncate">
+        Ad: {ad.title}
+      </p>
+    </div>
       </a>
       {/* Close button */}
       <button onClick={(e) => { e.preventDefault(); setShow(false); }}
