@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, ArrowRight } from 'lucide-react';
+import { Mail, ChevronRight } from 'lucide-react';
 import useAuth from '../../context/useAuth';
 import toast from 'react-hot-toast';
 
@@ -66,7 +66,7 @@ const Login = () => {
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Sending OTP...
               </span>
-            : <><span>Send OTP</span><ArrowRight className="w-5 h-5" /></>
+            : <><span>Send OTP</span><ChevronRight className="w-5 h-5" /></>
           }
         </button>
       </form>

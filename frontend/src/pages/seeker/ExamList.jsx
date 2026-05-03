@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Award, CheckCircle2, Star, ArrowRight, Lock } from 'lucide-react';
+import { Award, CheckCircle2, Star, ChevronRight, Lock } from 'lucide-react';
 import { examService } from '../../services/examService';
 import useAuth from '../../context/useAuth';
 import Modal from '../../components/ui/Modal';
@@ -80,7 +80,7 @@ const ExamList = () => {
       const orderData = await paymentService.createExamOrder(exam.id);
       const response  = await paymentService.openRazorpay({
         key: orderData.key, amount: orderData.order.amount,
-        currency: orderData.order.currency, name: 'JobNest',
+        currency: orderData.order.currency, name: 'RojgarSetu',
         description: `Skill Exam: ${exam.name}`,
         order_id: orderData.order.id, prefill: { contact: user?.mobile },
         theme: { color: '#2563eb' },
@@ -126,7 +126,7 @@ const ExamList = () => {
             </div>
             <button onClick={() => navigate('/seeker/subscription')}
               className="flex items-center gap-1 text-purple-600 font-semibold text-sm flex-shrink-0">
-              Upgrade <ArrowRight className="w-4 h-4" />
+              Upgrade <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -198,7 +198,7 @@ const ExamList = () => {
               className="btn-primary w-full py-4 text-base justify-between" style={{ borderRadius: '12px' }}>
               {paying
                 ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Processing...</span>
-                : <><span>Pay ₹49 & Start Exam</span><ArrowRight className="w-5 h-5" /></>
+                : <><span>Pay ₹49 & Start Exam</span><ChevronRight className="w-5 h-5" /></>
               }
             </button>
           </div>

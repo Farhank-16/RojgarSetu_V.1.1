@@ -12,19 +12,16 @@ const MainLayout = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="pt-14 pb-20 min-h-screen">
+      <div className='pt-14'></div>
+      {showAds && (
+          <TopBannerAd />
+      )}
+      <main className="pb-20 min-h-screen">
         <Outlet />
+
       </main>
 
-      {showAds && (
-        <div className="fixed left-0 right-0 z-30" style={{ top: '56px' }}>
-          <TopBannerAd />
-        </div>
-      )}
-
-      {showAds && <MiddleSectionAd />}
-
-      {showAds && <BottomBannerAd />}
+       {showAds && <BottomBannerAd />}
       <BottomNav />
     </div>
   );

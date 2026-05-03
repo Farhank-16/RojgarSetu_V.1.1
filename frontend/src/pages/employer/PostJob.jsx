@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Navigation, CheckCircle2, ArrowRight, X } from 'lucide-react';
+import { Navigation, CheckCircle2, ChevronRight, X } from 'lucide-react';
 import { jobService } from '../../services/jobService';
 import { skillService } from '../../services/skillService';
 import useAuth from '../../context/useAuth';
@@ -220,7 +220,7 @@ const PostJob = () => {
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Posting Job...
               </span>
-            : <><span>Post Job</span><ArrowRight className="w-5 h-5" /></>
+            : <><span>Post Job</span><ChevronRight className="w-5 h-5" /></>
           }
         </button>
       </form>

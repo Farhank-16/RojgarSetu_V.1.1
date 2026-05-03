@@ -23,14 +23,15 @@ const TITLES = {
   '/admin/skills':            'Manage Skills',
   '/admin/questions':         'Exam Questions',
   '/admin/payments':          'Payments',
+  '/admin/ads':               'Advertisements',
 };
 
 const getTitle = (pathname) => {
   if (TITLES[pathname] !== undefined) return TITLES[pathname]; // null = show logo
   for (const [key, val] of Object.entries(TITLES)) {
-    if (key !== '/' && pathname.startsWith(key + '/')) return val || 'JobNest';
+    if (key !== '/' && pathname.startsWith(key + '/')) return val || 'RojgarSetu';
   }
-  return 'JobNest';
+  return 'RojgarSetu';
 };
 
 const BASE_PATHS = ['/seeker', '/employer', '/admin'];

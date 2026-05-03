@@ -5,6 +5,7 @@ import useAuth from '../../context/useAuth';
 import { userService } from '../../services/userService';
 import { skillService } from '../../services/skillService';
 import Input from '../../components/ui/Input';
+import SkillPicker from '../../components/forms/SkillPicker';
 import Select from '../../components/ui/Select';
 import Modal from '../../components/ui/Modal';
 import toast from 'react-hot-toast';
@@ -14,7 +15,6 @@ const SeekerProfile = () => {
   const navigate = useNavigate();
 
   const [showEdit, setShowEdit]   = useState(false);
-  const [allSkills, setAllSkills] = useState([]);
   const [loading, setLoading]     = useState(false);
 
   const [form, setForm] = useState({
@@ -34,13 +34,11 @@ const SeekerProfile = () => {
         expectedSalaryMin: user.expectedSalaryMin || '',
         expectedSalaryMax: user.expectedSalaryMax || '',
         selectedSkills:    user.skills?.map(s => s.id) || [],
+        customSkills:     [],  // custom skills reset on edit
       });
     }
   }, [user]);
 
-  useEffect(() => {
-    skillService.getSkills().then(({ skills }) => setAllSkills(skills)).catch(console.error);
-  }, []);
 
   const set = k => e => setForm(p => ({ ...p, [k]: e.target.value }));
 
@@ -216,27 +214,12 @@ const SeekerProfile = () => {
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2"
               style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Skills</label>
-            <div className="flex flex-wrap gap-2">
-              {allSkills.map(skill => {
-                const selected = form.selectedSkills.includes(skill.id);
-                return (
-                  <button key={skill.id} type="button"
-                    onClick={() => setForm(p => ({
-                      ...p,
-                      selectedSkills: selected
-                        ? p.selectedSkills.filter(id => id !== skill.id)
-                        : [...p.selectedSkills, skill.id],
-                    }))}
-                    className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
-                    style={{
-                      background: selected ? '#2563eb' : '#f1f5f9',
-                      color:      selected ? 'white'   : '#475569',
-                    }}>
-                    {skill.name}
-                  </button>
-                );
-              })}
-            </div>
+            <SkillPicker
+              selectedIds={form.selectedSkills}
+              selectedCustom={form.customSkills || []}
+              onChange={ids => setForm(p => ({ ...p, selectedSkills: ids }))}
+              onCustomChange={custom => setForm(p => ({ ...p, customSkills: custom }))}
+            />
           </div>
 
           <button onClick={handleSave} disabled={loading}

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, ChevronRight} from 'lucide-react';
 import useAuth from '../context/useAuth';
 
 const MESSAGES = {
@@ -76,7 +76,7 @@ const PaymentSuccess = () => {
           style={{ borderRadius: '12px' }}
         >
           <span>Go to Dashboard</span>
-          <ArrowRight className="w-5 h-5" />
+          <ChevronRight className="w-5 h-5" />
         </button>
         {type === 'exam' && (
           <button

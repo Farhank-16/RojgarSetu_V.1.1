@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Phone, Award, CheckCircle2, Lock, ArrowRight } from 'lucide-react';
+import { MapPin, Phone, Award, CheckCircle2, Lock, ChevronRight } from 'lucide-react';
 import { userService } from '../../services/userService';
 import useAuth from '../../context/useAuth';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -90,11 +90,21 @@ const CandidateProfile = () => {
         {/* Details */}
         <div className="card-elevated p-4 divide-y divide-slate-50">
           <h3 className="font-display font-bold text-slate-800 text-sm pb-3">Details</h3>
-          {profile.experience_years > 0 ? (
-            <div className="flex items-center justify-between py-2.5">
-              <span className="text-xs text-slate-400">Experience</span>
-              <span className="font-semibold text-slate-800 text-sm">{profile.experience_years} years</span>
-            </div>
+          {[
+            ['Experience',   profile.experience_years > 0 ? `${profile.experience_years} years` : null],
+            ['Email',        profile.email || null],
+            ['Availability', profile.availability?.replace(/_/g, ' ') || null],
+          ].filter(([_, v]) => v).length > 0 ? (
+            [
+              ['Experience',   profile.experience_years > 0 ? `${profile.experience_years} years` : null],
+              ['Email',        profile.email || null],
+              ['Availability', profile.availability?.replace(/_/g, ' ') || null],
+            ].filter(([_, v]) => v).map(([label, value]) => (
+              <div key={label} className="flex items-center justify-between py-2.5">
+                <span className="text-xs text-slate-400">{label}</span>
+                <span className="font-semibold text-slate-800 text-sm capitalize truncate max-w-[200px]">{value}</span>
+              </div>
+            ))
           ) : (
             <p className="text-slate-400 text-xs py-2">No details provided yet</p>
           )}
@@ -141,18 +151,18 @@ const CandidateProfile = () => {
       </div>
 
       {/* Bottom action */}
-      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-slate-100 p-4 safe-bottom">
+      <div className=" left-0 right-0 bg-white border-t border-slate-100 p-4 safe-bottom">
         {profile.canContact && profile.mobile ? (
           <a href={`tel:${profile.mobile}`}
             className="btn-primary w-full py-4 text-base justify-between flex items-center px-5 rounded-[12px] no-underline">
             <span className="flex items-center gap-2"><Phone className="w-5 h-5" /> Call {profile.mobile}</span>
-            <ArrowRight className="w-5 h-5" />
+            <ChevronRight className="w-5 h-5" />
           </a>
         ) : (
           <button onClick={() => navigate('/employer/subscription')}
             className="btn-primary w-full py-4 text-base justify-between" style={{ borderRadius: '12px' }}>
             <span className="flex items-center gap-2"><Lock className="w-5 h-5" /> Subscribe to Contact</span>
-            <ArrowRight className="w-5 h-5" />
+            <ChevronRight className="w-5 h-5" />
           </button>
         )}
       </div>

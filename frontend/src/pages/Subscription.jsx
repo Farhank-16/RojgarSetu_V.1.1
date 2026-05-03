@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Check, Shield, Search, Phone, Award, Zap, Star, ArrowRight, BadgeCheck } from 'lucide-react';
+import { Crown, Check, Shield, Search, Phone, Award, Zap, Star, ChevronRight, BadgeCheck } from 'lucide-react';
 import { paymentService } from '../services/paymentService';
 import useAuth from '../context/useAuth';
 import Modal from '../components/ui/Modal';
@@ -60,7 +60,7 @@ const PlanCard = ({ gradient, icon: Icon, title, price, sub, features, cta, load
             Processing...
           </span>
         ) : (
-          <><span>{cta}</span><ArrowRight className="w-4 h-4" /></>
+          <><span>{cta}</span><ChevronRight className="w-4 h-4" /></>
         )}
       </button>
     </div>
@@ -91,7 +91,7 @@ const Subscription = () => {
       const orderData = await paymentService.createSubscriptionOrder();
       const res = await paymentService.openRazorpay({
         key: orderData.key, amount: orderData.order.amount,
-        currency: orderData.order.currency, name: 'JobNest',
+        currency: orderData.order.currency, name: 'RojgarSetu',
         description: orderData.isFirstMonth ? 'Premium — First Month' : 'Premium Subscription',
         order_id: orderData.order.id, prefill: { contact: user?.mobile },
         theme: { color: '#7c3aed' },
@@ -115,7 +115,7 @@ const Subscription = () => {
       const orderData = await paymentService.createBadgeOrder();
       const res = await paymentService.openRazorpay({
         key: orderData.key, amount: orderData.order.amount,
-        currency: orderData.order.currency, name: 'JobNest',
+        currency: orderData.order.currency, name: 'RojgarSetu',
         description: 'Verified Badge — Instant Activation',
         order_id: orderData.order.id, prefill: { contact: user?.mobile },
         theme: { color: '#2563eb' },
@@ -153,7 +153,7 @@ const Subscription = () => {
       const skillName = userSkills.find(s => s.id === selectedSkillId)?.name || 'Skill';
       const res = await paymentService.openRazorpay({
         key: orderData.key, amount: orderData.order.amount,
-        currency: orderData.order.currency, name: 'JobNest',
+        currency: orderData.order.currency, name: 'RojgarSetu',
         description: `Skill Exam: ${skillName}`,
         order_id: orderData.order.id, prefill: { contact: user?.mobile },
         theme: { color: '#d97706' },
@@ -326,7 +326,7 @@ const Subscription = () => {
             className="btn-primary w-full py-3.5 text-sm justify-between"
             style={{ borderRadius: '10px', background: 'linear-gradient(135deg, #d97706, #b45309)' }}>
             <span>Pay ₹49 & Start Exam</span>
-            <ArrowRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </Modal>

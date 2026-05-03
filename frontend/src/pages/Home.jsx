@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Users, ShieldCheck, Star, ArrowRight, Briefcase, TrendingUp } from 'lucide-react';
+import { MapPin, Users, ShieldCheck, Star, ChevronRight, Briefcase, TrendingUp } from 'lucide-react';
 import Logo from '../components/ui/Logo';
 
 const Home = () => {
@@ -33,7 +33,7 @@ const Home = () => {
             style={{ borderRadius: '12px', background: 'white', color: '#1d4ed8', boxShadow: '0 4px 16px rgba(0,0,0,0.12)' }}
           >
             <span>Get Started</span>
-            <ArrowRight className="w-5 h-5" />
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -54,7 +54,7 @@ const Home = () => {
 
       {/* Features */}
       <div className="flex-1 bg-slate-50 px-4 pt-7 pb-10">
-        <h2 className="font-display text-base font-bold text-slate-700 mb-4">Why JobNest?</h2>
+        <h2 className="font-display text-base font-bold text-slate-700 mb-4">Why RojgarSetu?</h2>
         <div className="space-y-3">
           {[
             { icon: MapPin,      bg: '#eff6ff', fg: '#2563eb', title: 'Location-Based Search',   desc: 'Find jobs within your preferred distance' },

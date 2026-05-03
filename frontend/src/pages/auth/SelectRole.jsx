@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, Search, ArrowRight } from 'lucide-react';
+import { Briefcase, Search, ChevronRight } from 'lucide-react';
 import useAuth from '../../context/useAuth';
 import toast from 'react-hot-toast';
 
@@ -88,7 +88,7 @@ const SelectRole = () => {
               <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               Setting up...
             </span>
-          : <><span>Continue</span><ArrowRight className="w-5 h-5" /></>
+          : <><span>Continue</span><ChevronRight className="w-5 h-5" /></>
         }
       </button>
     </div>

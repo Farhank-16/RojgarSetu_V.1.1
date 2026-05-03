@@ -72,6 +72,7 @@ const AdminDashboard = () => {
             { label: 'Skills',    emoji: '🛠️', path: '/admin/skills' },
             { label: 'Questions', emoji: '📝', path: '/admin/questions' },
             { label: 'Payments',  emoji: '💳', path: '/admin/payments' },
+            // { label: 'Ads',       emoji: '📢', path: '/admin/ads' }
           ].map(({ label, emoji, path }) => (
             <button key={path} onClick={() => navigate(path)}
               className="flex flex-col items-center gap-1.5 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 active:scale-95 transition-all">

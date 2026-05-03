@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Briefcase, Award, Crown, MapPin, CheckCircle2, ArrowRight, TrendingUp } from 'lucide-react';
+import { Search, Briefcase, Award, Crown, MapPin, CheckCircle2, ChevronRight, TrendingUp } from 'lucide-react';
 import useAuth from '../../context/useAuth';
 import { jobService } from '../../services/jobService';
 import JobCard from '../../components/cards/JobCard';
@@ -63,7 +63,7 @@ const SeekerDashboard = () => {
           <button onClick={() => navigate('/seeker/subscription')}
             className="mt-5 w-full py-3 bg-white rounded-xl font-display font-bold text-blue-700 text-sm flex items-center justify-between px-4">
             <span className="flex items-center gap-2"><Crown className="w-4 h-4 text-purple-500" /> Upgrade to Apply Jobs</span>
-            <ArrowRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -97,7 +97,7 @@ const SeekerDashboard = () => {
             </div>
             <button onClick={() => navigate('/seeker/profile')}
               className="text-xs text-blue-600 font-semibold flex items-center gap-1">
-              Complete now <ArrowRight className="w-3.5 h-3.5" />
+              Complete now <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>

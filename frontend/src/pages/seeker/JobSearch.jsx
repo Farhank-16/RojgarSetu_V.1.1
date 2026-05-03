@@ -10,6 +10,7 @@ import Input from '../../components/ui/Input';
 import Modal from '../../components/ui/Modal';
 import EmptyState from '../../components/ui/EmptyState';
 import { SkeletonList } from '../../components/ui/Skeleton';
+import { MiddleSectionAd } from '../../components/ads/AdBanner';
 
 const JobSearch = () => {
   const { isSubscribed } = useAuth();
@@ -63,6 +64,7 @@ const JobSearch = () => {
   return (
     <div className="min-h-screen bg-slate-50">
 
+
       {/* Search + filter bar */}
       <div className="sticky top-14 bg-white border-b border-slate-100 z-30 px-4 py-3 space-y-2.5">
         <div className="flex gap-2">
@@ -102,7 +104,7 @@ const JobSearch = () => {
       <div className="px-4 py-4 pb-20">
         {!loading && (
           <p className="text-xs text-slate-500 font-medium mb-3">
-            {pagination.total} jobs found{!isSubscribed && ' · within 10 km'}
+            {pagination.total} jobs found{!isSubscribed && ' '}
           </p>
         )}
 
@@ -115,6 +117,8 @@ const JobSearch = () => {
             description="Try adjusting your filters or search terms"
             action={clearFilters} actionLabel="Clear Filters" />
         )}
+
+      <MiddleSectionAd />
 
         {!loading && pagination.page < pagination.pages && (
           <button

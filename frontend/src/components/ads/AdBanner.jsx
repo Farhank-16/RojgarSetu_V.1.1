@@ -68,30 +68,27 @@ export const TopBannerAd = () => {
     <div className="relative w-full overflow-hidden" style={{ height: '72px' }}>
       <a href={ad.redirect_url || '#'} target="_blank" rel="noopener noreferrer"
         className="block w-full h-full">
-        {/* Ad image/video with 75% opacity — content visible underneath */}
-        <div className="w-full h-full" style={{ opacity: 0.82 }}>
+        <div className="w-full h-full">
           <AdMedia ad={ad} />
         </div>
-        {/* Extra semi-transparent dark layer for readability */}
-        {/* <div className="absolute inset-0"
-          style={{ background: 'rgba(0,0,0,0.18)' }} /> */}
-          
+                 
         {/* Ad title at bottom */}
-         <div
-      className="absolute bottom-1 left-2 right-2 pointer-events-none"
-      style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
-    >
-      <p className="text-white text-md font-semibold truncate">
+          <div className="absolute inset-0 flex items-center px-2 "
+            style={{ background: 'rgba(0,0,0,0.2)' }}>
+      <p className="text-white text-xs font-semibold mt-10 truncate" 
+      style={{ textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
         Ad: {ad.title}
       </p>
     </div>
+    <span className="absolute top-1.5 left-2 text-white/60 font-medium"
+        style={{ fontSize: '9px', zIndex: 10 }}>Sponsored</span>
       </a>
       {/* Close button */}
-      <button onClick={(e) => { e.preventDefault(); setShow(false); }}
+      {/* <button onClick={(e) => { e.preventDefault(); setShow(false); }}
         className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center"
         style={{ background: 'rgba(0,0,0,0.45)', zIndex: 10 }}>
         <X className="w-3 h-3 text-white" />
-      </button>
+      </button> */}
     </div>
   );
 };
@@ -109,7 +106,7 @@ export const MiddleSectionAd = () => {
   if (!ad) return null;
 
   return (
-    <div className="relative w-full overflow-hidden" style={{ height: '140px' }}>
+    <div className="relative w-full overflow-hidden rounded-lg " style={{ height: '100px' }}>
       <a href={ad.redirect_url || '#'} target="_blank" rel="noopener noreferrer"
         className="block w-full h-full">
         <AdMedia ad={ad} />
@@ -118,7 +115,7 @@ export const MiddleSectionAd = () => {
           style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.65))' }}>
           <div className="flex items-center justify-between">
             <p className="text-white font-bold text-xs truncate pr-2"
-              style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>{ad.title}</p>
+              style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Ad:{ad.title}</p>
             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full flex-shrink-0"
               style={{ background: 'rgba(255,255,255,0.2)' }}>
               <ExternalLink className="w-3 h-3 text-white" />
@@ -137,27 +134,27 @@ export const MiddleSectionAd = () => {
 export const BottomBannerAd = () => {
   const [ad, setAd]     = useState(null);
   const [show, setShow] = useState(true);
-
+ 
   useEffect(() => {
     advertisementService.getAds('bottom_banner')
       .then(ads => { if (ads.length) setAd(ads[0]); })
       .catch(() => {});
   }, []);
-
+ 
   if (!ad || !show) return null;
-
+ 
   return (
-    <div className="fixed left-0 right-0 z-40"
-      style={{ bottom: '64px' }}> {/* sits above bottom nav */}
+    <div className="fixed left-0  right-0 z-40"
+      style={{ bottom: 'var(--bottom-offset)' ? '0' : 'var(--bottom-offset)' }}> {/* sits above bottom nav */}
       <div className="relative w-full overflow-hidden" style={{ height: '64px' }}>
         <a href={ad.redirect_url || '#'} target="_blank" rel="noopener noreferrer"
           className="block w-full h-full">
           <AdMedia ad={ad} />
           {/* Title overlay */}
-          <div className="absolute inset-0 flex items-center px-4"
+          <div className="absolute inset-0 flex items-center px-2 "
             style={{ background: 'rgba(0,0,0,0.2)' }}>
-            <p className="text-white font-bold text-sm flex-1 truncate pr-2"
-              style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>{ad.title}</p>
+            <p className="text-white font-bold text-xs flex-1 mt-10  truncate pr-2"
+              style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Ad:{ad.title}</p>
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full flex-shrink-0"
               style={{ background: 'rgba(255,255,255,0.9)' }}>
               <ExternalLink className="w-3 h-3 text-slate-700" />
@@ -165,13 +162,13 @@ export const BottomBannerAd = () => {
             </div>
           </div>
         </a>
-        <button onClick={() => setShow(false)}
+        {/* <button onClick={() => setShow(false)}
           className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center"
           style={{ background: 'rgba(0,0,0,0.45)', zIndex: 10 }}>
           <X className="w-3 h-3 text-white" />
-        </button>
-        <span className="absolute bottom-1 left-2 text-white/50"
-          style={{ fontSize: '9px', zIndex: 10 }}>Ad</span>
+        </button> */}
+        <span className="absolute top-1 left-2 text-white/50 font-medium "
+          style={{ fontSize: '9px', zIndex: 10 }}>Sponsored</span>
       </div>
     </div>
   );

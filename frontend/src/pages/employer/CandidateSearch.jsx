@@ -72,7 +72,7 @@ const CandidateSearch = () => {
       <div className="px-4 py-4 pb-20">
         {!loading && (
           <p className="text-xs text-slate-500 font-medium mb-3">
-            {candidates.length} candidates{!isSubscribed && ' · within 10 km'}
+            {candidates.length} candidates{!isSubscribed && ' '}
           </p>
         )}
 

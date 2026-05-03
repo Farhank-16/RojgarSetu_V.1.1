@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Briefcase, Users, Eye, Crown, TrendingUp, MapPin, ArrowRight, ChevronRight, CheckCircle2, BadgeCheck } from 'lucide-react';
+import { Plus, Briefcase, Users, Eye, Crown, TrendingUp, MapPin,  ChevronRight, CheckCircle2, BadgeCheck } from 'lucide-react';
 import useAuth from '../../context/useAuth';
 import { jobService } from '../../services/jobService';
 import { SkeletonCard } from '../../components/ui/Skeleton';
@@ -57,7 +57,7 @@ const EmployerDashboard = () => {
           <button onClick={() => navigate('/employer/subscription')}
             className="mt-5 w-full py-3 bg-white rounded-xl font-display font-bold text-blue-700 text-sm flex items-center justify-between px-4">
             <span className="flex items-center gap-2"><Crown className="w-4 h-4 text-purple-500" /> Upgrade to Contact Candidates</span>
-            <ArrowRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4" />
           </button>
         )}
       </div>

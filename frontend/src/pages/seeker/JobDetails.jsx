@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Clock, IndianRupee, Phone, CheckCircle2, Users, ArrowRight, BadgeCheck } from 'lucide-react';
+import { MapPin, Clock, IndianRupee, Phone, CheckCircle2, Users, ChevronRight, BadgeCheck } from 'lucide-react';
 import { jobService } from '../../services/jobService';
 import useAuth from '../../context/useAuth';
 import Modal from '../../components/ui/Modal';
@@ -154,12 +154,12 @@ const JobDetails = () => {
         ) : isSubscribed ? (
           <button onClick={() => setShowModal(true)}
             className="btn-primary w-full py-4 text-base justify-between" style={{ borderRadius: '12px' }}>
-            <span>Apply Now</span><ArrowRight className="w-5 h-5" />
+            <span>Apply Now</span><ChevronRight className="w-5 h-5" />
           </button>
         ) : (
           <button onClick={() => navigate('/seeker/subscription')}
-            className="btn-primary w-full py-4 text-base justify-between" style={{ borderRadius: '12px' }}>
-            <span>Subscribe to Apply</span><ArrowRight className="w-5 h-5" />
+            className="btn-primary w-full py-4 mb-20 text-base justify-between" style={{ borderRadius: '12px' }}>
+            <span>Subscribe to Apply</span><ChevronRight className="w-5 h-5" />
           </button>
         )}
       </div>
