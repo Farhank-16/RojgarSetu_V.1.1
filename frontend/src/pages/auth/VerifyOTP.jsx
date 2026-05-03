@@ -15,14 +15,11 @@ const VerifyOTP = () => {
   const email = sessionStorage.getItem('pendingEmail');
 
   useEffect(() => {
-    // Don't redirect if no email — just show empty state
-    // (redirecting here caused loop issues)
-    const t = setInterval(() => setResendTimer(p => p > 0 ? p - 1 : 0), 1000);
+        const t = setInterval(() => setResendTimer(p => p > 0 ? p - 1 : 0), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // If no email, show go back button
-  if (!email) {
+    if (!email) {
     return (
       <div className="px-6 py-8 text-center">
         <p className="text-slate-500 mb-4">Session expired. Please login again.</p>

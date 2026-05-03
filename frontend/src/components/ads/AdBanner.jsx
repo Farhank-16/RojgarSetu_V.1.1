@@ -83,13 +83,7 @@ export const TopBannerAd = () => {
     <span className="absolute top-1.5 left-2 text-white/60 font-medium"
         style={{ fontSize: '9px', zIndex: 10 }}>Sponsored</span>
       </a>
-      {/* Close button */}
-      {/* <button onClick={(e) => { e.preventDefault(); setShow(false); }}
-        className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center"
-        style={{ background: 'rgba(0,0,0,0.45)', zIndex: 10 }}>
-        <X className="w-3 h-3 text-white" />
-      </button> */}
-    </div>
+       </div>
   );
 };
 
@@ -162,12 +156,7 @@ export const BottomBannerAd = () => {
             </div>
           </div>
         </a>
-        {/* <button onClick={() => setShow(false)}
-          className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.45)', zIndex: 10 }}>
-          <X className="w-3 h-3 text-white" />
-        </button> */}
-        <span className="absolute top-1 left-2 text-white/50 font-medium "
+               <span className="absolute top-1 left-2 text-white/50 font-medium "
           style={{ fontSize: '9px', zIndex: 10 }}>Sponsored</span>
       </div>
     </div>

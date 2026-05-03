@@ -1,6 +1,3 @@
-// AdManager.jsx — Drop this inside any page to show ads for that section
-// Usage: <AdManager placement="middle_section" />
-
 import React from 'react';
 import { TopBannerAd, MiddleSectionAd, BottomBannerAd } from '../components/ads/AdBanner';
 
