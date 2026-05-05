@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ChevronLeft, Bell } from 'lucide-react';
+import { ChevronLeft, Bell, LogOut } from 'lucide-react';
 import useAuth from '../../context/useAuth';
 import Logo from '../ui/Logo';
 
@@ -27,7 +27,7 @@ const TITLES = {
 };
 
 const getTitle = (pathname) => {
-  if (TITLES[pathname] !== undefined) return TITLES[pathname]; // null = show logo
+  if (TITLES[pathname] !== undefined) return TITLES[pathname];
   for (const [key, val] of Object.entries(TITLES)) {
     if (key !== '/' && pathname.startsWith(key + '/')) return val || 'RojgarSetu';
   }
@@ -39,11 +39,13 @@ const BASE_PATHS = ['/seeker', '/employer', '/admin'];
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
-  const isBase  = BASE_PATHS.includes(location.pathname);
-  const title   = getTitle(location.pathname);
-  const showLogo = title === null; // null means home screen → show logo
+  const isBase   = BASE_PATHS.includes(location.pathname);
+  const title    = getTitle(location.pathname);
+  const showLogo = title === null;
+  const isAdmin  = user?.role === 'admin';
+  const isAdminDashboard = location.pathname === '/admin';
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white z-40"
@@ -68,15 +70,27 @@ const Header = () => {
 
         {/* Right */}
         <div className="flex items-center gap-1">
-          <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 relative">
-            <Bell className="w-5 h-5 text-slate-500" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
-          </button>
-          {user && (
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-display font-bold ml-1"
-              style={{ background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}>
-              {user.name?.charAt(0).toUpperCase() || '?'}
-            </div>
+          {/* Logout — only on admin dashboard */}
+          {isAdmin && isAdminDashboard ? (
+            <button onClick={logout}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-colors"
+              style={{ background: '#fff1f2', color: '#be123c' }}>
+              <LogOut className="w-4 h-4" />
+              <span className="text-xs font-display font-bold">Logout</span>
+            </button>
+          ) : (
+            <>
+              <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 relative">
+                <Bell className="w-5 h-5 text-slate-500" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
+              </button>
+              {user && (
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-display font-bold ml-1"
+                  style={{ background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}>
+                  {user.name?.charAt(0).toUpperCase() || '?'}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
