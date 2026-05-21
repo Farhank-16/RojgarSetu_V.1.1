@@ -1,13 +1,13 @@
-# JobNest 🏢
+# RojgarSetu 🏢
 
 A mobile-first hyperlocal job platform connecting local job seekers with employers.
 connecting skilled workers with employers in their vicinity using GPS-based distance matching, skill certifications, and instant mobile-first experience.
 
 ---
 
-## 📱 What is JobNest?
+## 📱 What is RojgarSetu?
 
-JobNest is a full-stack mobile-first job portal built specifically for the Indian blue-collar and grey-collar workforce. Unlike traditional job portals, JobNest focuses on **proximity-based job matching** — seekers and employers within a defined radius (up to 100 km for premium users) see each other's listings.
+RojgarSetu is a full-stack mobile-first job portal built specifically for the Indian blue-collar and grey-collar workforce. Unlike traditional job portals, RojgarSetu focuses on **proximity-based job matching** — seekers and employers within a defined radius (up to 100 km for premium users) see each other's listings.
 
 The platform supports three distinct roles — **Job Seeker**, **Employer**, and **Admin** — each with a dedicated experience, subscription model, and feature set.
 ---
@@ -25,7 +25,7 @@ The platform supports three distinct roles — **Job Seeker**, **Employer**, and
 ## Project Structure
 
 ```
-jobnest/
+RojgarSetu/
 ├── frontend/                    # React app
 │   ├── src/
 │   │   ├── components/
