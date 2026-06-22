@@ -9,9 +9,9 @@ const Logo = ({ size = 'md' }) => {
 
   return (
     <img
-      src="/RojgarSetu.png"   
+      src="/logoWOBG.jpeg"   
       alt="RojgarSetu Logo"
-      className={`${sizes[size]} width-auto object-contain`}
+      className={`${sizes[size]} width-auto object-contain brightness-0`}
     />
   );
 };

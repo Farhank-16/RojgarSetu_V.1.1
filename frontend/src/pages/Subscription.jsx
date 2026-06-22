@@ -100,6 +100,7 @@ const Subscription = () => {
         razorpay_order_id: orderData.order.id,
         razorpay_payment_id: res.razorpay_payment_id,
         razorpay_signature: res.razorpay_signature,
+        paymentType: 'subscription',
       });
       await refreshUser();
       toast.success('Subscription activated! 🎉');
@@ -124,6 +125,7 @@ const Subscription = () => {
         razorpay_order_id: orderData.order.id,
         razorpay_payment_id: res.razorpay_payment_id,
         razorpay_signature: res.razorpay_signature,
+        paymentType: 'verified_badge',
       });
       await refreshUser();
       toast.success('Profile verified! Blue tick activated ✓');
@@ -162,6 +164,7 @@ const Subscription = () => {
         razorpay_order_id: orderData.order.id,
         razorpay_payment_id: res.razorpay_payment_id,
         razorpay_signature: res.razorpay_signature,
+        paymentType: 'skill_exam',
       });
       toast.success('Payment done! Starting exam...');
       navigate(`/seeker/exams/${selectedSkillId}`);

@@ -36,17 +36,38 @@ const getDashboardStats = async (req, res) => {
       supabase.from('payments').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
     ]);
 
-    // Revenue calc
+    // Calculate new users this week (created_at >= 7 days ago)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const { count: newThisWeek } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .neq('role', 'admin')
+      .gte('created_at', sevenDaysAgo.toISOString());
+
+    // Calculate monthly revenue (completed payments in the last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const { data: monthlyPayments } = await supabase
+      .from('payments')
+      .select('amount')
+      .eq('status', 'completed')
+      .gte('created_at', thirtyDaysAgo.toISOString());
+    const monthlyRevenue = (monthlyPayments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0) / 100;
+
+    // Total Revenue calc (in Rupees)
     const { data: payments } = await supabase
       .from('payments')
       .select('amount')
       .eq('status', 'completed');
-    const revenue = payments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+    const revenue = (payments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0) / 100;
 
     res.json({
       totalUsers, seekers, employers, activeSubs,
       verifiedUsers: verified, totalJobs, activeJobs,
       totalApplications, totalPayments, revenue,
+      newThisWeek: newThisWeek || 0,
+      monthlyRevenue: monthlyRevenue || 0,
     });
   } catch (error) {
     console.error('Dashboard Stats Error:', error);
@@ -113,7 +134,7 @@ const getJobs = async (req, res) => {
 
     let query = supabase
       .from('jobs')
-      .select('id, title, city, area, job_type, is_active, views_count, applications_count, created_at, profiles!employer_id(name)', { count: 'exact' })
+      .select('id, title, city, area, job_type, is_active, views_count, applications_count, created_at, profiles!employer_id(name), job_skills(skills(name))', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(from, to);
 
@@ -124,7 +145,11 @@ const getJobs = async (req, res) => {
     if (error) throw error;
 
     res.json({
-      jobs: (data || []).map(j => ({ ...j, employer_name: j.profiles?.name })),
+      jobs: (data || []).map(j => ({
+        ...j,
+        employer_name: j.profiles?.name,
+        skill_name:    j.job_skills?.[0]?.skills?.name,
+      })),
       pagination: { page, limit, total: count, pages: Math.ceil(count / limit) },
     });
   } catch (error) {
@@ -133,15 +158,34 @@ const getJobs = async (req, res) => {
   }
 };
 
-// ── Skills ────────────────────────────────────────────────────────
 const getSkills = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('skills')
-      .select('*')
+      .select(`
+        *,
+        user_skills(count),
+        job_skills(count),
+        exams(count)
+      `)
       .order('name');
     if (error) throw error;
-    res.json({ skills: data });
+
+    const skills = (data || []).map(s => {
+      const users_count     = s.user_skills?.[0]?.count || 0;
+      const jobs_count      = s.job_skills?.[0]?.count  || 0;
+      const questions_count = s.exams?.[0]?.count        || 0;
+
+      const { user_skills, job_skills, exams, ...rest } = s;
+      return {
+        ...rest,
+        users_count,
+        jobs_count,
+        questions_count,
+      };
+    });
+
+    res.json({ skills });
   } catch (error) {
     console.error('Get Skills Error:', error);
     res.status(500).json({ error: 'Failed to get skills' });
@@ -199,15 +243,22 @@ const deleteSkill = async (req, res) => {
 const getQuestions = async (req, res) => {
   try {
     const { skillId } = req.query;
-    if (!skillId) return res.status(400).json({ error: 'skillId required' });
-
-    const { data, error } = await supabase
+    let query = supabase
       .from('exams')
-      .select('*')
-      .eq('skill_id', skillId)
+      .select('*, skills(name)')
       .order('id');
+
+    if (skillId) {
+      query = query.eq('skill_id', skillId);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
-    res.json({ questions: data });
+
+    res.json({
+      questions: (data || []).map(q => ({ ...q, skill_name: q.skills?.name })),
+      total: data?.length || 0,
+    });
   } catch (error) {
     console.error('Get Questions Error:', error);
     res.status(500).json({ error: 'Failed to get questions' });
@@ -274,16 +325,28 @@ const deleteQuestion = async (req, res) => {
 const getPayments = async (req, res) => {
   try {
     const { page, limit, from, to } = getPagination(req.query.page, req.query.limit);
+    const { status, type } = req.query;
 
-    const { data, count, error } = await supabase
+    let query = supabase
       .from('payments')
-      .select('*, profiles!user_id(name, email)', { count: 'exact' })
+      .select('*, profiles!user_id(name, email, phone)', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(from, to);
+
+    if (status) query = query.eq('status', status);
+    if (type)   query = query.eq('payment_type', type);
+
+    const { data, count, error } = await query;
     if (error) throw error;
 
     res.json({
-      payments: (data || []).map(p => ({ ...p, user_name: p.profiles?.name, user_email: p.profiles?.email })),
+      payments: (data || []).map(p => ({
+        ...p,
+        amount:      Number(p.amount) / 100,
+        user_name:   p.profiles?.name,
+        user_email:  p.profiles?.email,
+        user_mobile: p.profiles?.phone,
+      })),
       pagination: { page, limit, total: count, pages: Math.ceil(count / limit) },
     });
   } catch (error) {

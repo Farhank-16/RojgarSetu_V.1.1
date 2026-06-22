@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Award, CheckCircle2, Star, ChevronRight, Lock } from 'lucide-react';
 import { examService } from '../../services/examService';
+import { paymentService } from '../../services/paymentService';
 import useAuth from '../../context/useAuth';
 import Modal from '../../components/ui/Modal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -89,6 +90,8 @@ const ExamList = () => {
         razorpay_order_id: orderData.order.id,
         razorpay_payment_id: response.razorpay_payment_id,
         razorpay_signature: response.razorpay_signature,
+        paymentType: 'skill_exam',
+        skillId: exam.id,
       });
       toast.success('Payment done! Starting exam...');
       setSelectedExam(null);

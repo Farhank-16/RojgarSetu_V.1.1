@@ -13,7 +13,26 @@ const adminRoutes   = require('./routes/admin');
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: config.frontendUrl, credentials: true }));
+
+// Support multiple origins split by comma, spaces, or '||'
+const allowedOrigins = config.frontendUrl
+  ? config.frontendUrl.split(/[\s,|||]+/).map(url => url.trim().replace(/\/$/, '')).filter(Boolean)
+  : ['http://localhost:5173'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const cleanOrigin = origin.replace(/\/$/, '');
+    const isAllowed = allowedOrigins.some(allowed => allowed.replace(/\/$/, '') === cleanOrigin);
+    if (isAllowed || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS policy.`), false);
+    }
+  },
+  credentials: true
+}));
+
 app.use(compression());
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,

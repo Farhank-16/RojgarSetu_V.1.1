@@ -114,7 +114,8 @@ const createBadgeOrder = async (req, res) => {
 
 const verifyPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, paymentType } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    let paymentType = req.body.paymentType;
     const userId = req.user.id;
 
     const isValid = razorpayService.verifyPaymentSignature(
@@ -124,6 +125,18 @@ const verifyPayment = async (req, res) => {
       await supabase.from('payments').update({ status: 'failed' })
         .eq('razorpay_order_id', razorpay_order_id);
       return res.status(400).json({ error: 'Invalid payment signature' });
+    }
+
+    // Retrieve paymentType from the DB if not supplied by request body
+    if (!paymentType) {
+      const { data: paymentRecord } = await supabase
+        .from('payments')
+        .select('payment_type')
+        .eq('razorpay_order_id', razorpay_order_id)
+        .maybeSingle();
+      if (paymentRecord) {
+        paymentType = paymentRecord.payment_type;
+      }
     }
 
     // Update payment record
@@ -149,6 +162,22 @@ const verifyPayment = async (req, res) => {
 
     if (paymentType === 'verified_badge') {
       await supabase.from('profiles').update({ is_verified: true }).eq('id', userId);
+    }
+
+    if (paymentType === 'skill_exam') {
+      const skillId = req.body.skillId;
+      if (!skillId) {
+        return res.status(400).json({ error: 'Skill ID required for exam verification' });
+      }
+      const { error: insertErr } = await supabase.from('exam_attempts').insert({
+        user_id: userId,
+        skill_id: parseInt(skillId),
+        passed: false,
+      });
+      if (insertErr) {
+        console.error('Failed to create exam attempt:', insertErr);
+        return res.status(500).json({ error: 'Failed to create exam attempt' });
+      }
     }
 
     res.json({ success: true, message: 'Payment verified', paymentType });

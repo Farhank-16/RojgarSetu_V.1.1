@@ -155,10 +155,10 @@ const JobSearch = () => {
         {/* Sort pills */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar">
           {[
-            { v: 'recent',      l: '🕐 Recent' },
-            { v: 'nearest',     l: '📍 Nearest' },
-            { v: 'salary_high', l: '💰 High Salary' },
-            { v: 'salary_low',  l: '💸 Low Salary' },
+            { v: 'recent',      l: ' Recent' },
+            { v: 'nearest',     l: ' Nearest' },
+            { v: 'salary_high', l: ' High Salary' },
+            { v: 'salary_low',  l: ' Low Salary' },
           ].map(({ v, l }) => (
             <button key={v}
               onClick={() => setFilters(p => ({ ...p, sortBy: v }))}

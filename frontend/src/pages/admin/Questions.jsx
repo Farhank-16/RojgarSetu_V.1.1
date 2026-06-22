@@ -31,6 +31,8 @@ const AdminQuestions = () => {
   const [skillFilter, setSkillFilter] = useState('');
   const [form, setForm]           = useState(BLANK);
   const [page, setPage]           = useState(1);
+  const [deletingId, setDeletingId] = useState(null);
+  const [deleting, setDeleting]     = useState(false);
 
   useEffect(() => { setPage(1); }, [skillFilter]);
   useEffect(() => { loadData(); }, [skillFilter]);
@@ -78,13 +80,16 @@ const AdminQuestions = () => {
     finally { setSaving(false); }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Delete this question?')) return;
+  const handleDelete = async () => {
+    if (!deletingId) return;
+    setDeleting(true);
     try {
-      await adminService.deleteQuestion(id);
-      setQuestions(p => p.filter(q => q.id !== id));
+      await adminService.deleteQuestion(deletingId);
+      setQuestions(p => p.filter(q => q.id !== deletingId));
       toast.success('Deleted');
+      setDeletingId(null);
     } catch { toast.error('Failed to delete'); }
+    finally { setDeleting(false); }
   };
 
   const openEdit = (q) => {
@@ -158,7 +163,7 @@ const AdminQuestions = () => {
                         className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100">
                         <Edit2 className="w-3.5 h-3.5 text-slate-400" />
                       </button>
-                      <button onClick={() => handleDelete(q.id)}
+                      <button onClick={() => setDeletingId(q.id)}
                         className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50">
                         <Trash2 className="w-3.5 h-3.5 text-red-400" />
                       </button>
@@ -273,6 +278,30 @@ const AdminQuestions = () => {
               : `${editing ? 'Update' : 'Create'} Question`
             }
           </button>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={!!deletingId} onClose={() => setDeletingId(null)} title="Delete Question">
+        <div className="space-y-4">
+          <p className="text-slate-600 text-sm">
+            Are you sure you want to delete this question? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <button onClick={() => setDeletingId(null)}
+              className="btn-secondary flex-1 py-3 text-sm" style={{ borderRadius: '10px' }}>Cancel</button>
+            <button onClick={handleDelete} disabled={deleting}
+              className="flex-1 py-3 text-sm font-display font-bold rounded-[10px] text-white"
+              style={{ background: '#e11d48' }}>
+              {deleting
+                ? <span className="flex items-center gap-2 justify-center">
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Deleting...
+                  </span>
+                : 'Delete'
+              }
+            </button>
+          </div>
         </div>
       </Modal>
     </div>
