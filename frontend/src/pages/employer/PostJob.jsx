@@ -110,7 +110,7 @@ const PostJob = () => {
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5"
               style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Description</label>
-            <textarea value={form.description} onChange={set('description')} rows={4} className="input"
+            <textarea value={form.description} onChange={set('description')} rows={6} className="textarea"
               placeholder="Describe responsibilities, requirements..." />
           </div>
 

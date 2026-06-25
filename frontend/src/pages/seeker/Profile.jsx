@@ -195,7 +195,7 @@ const SeekerProfile = () => {
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5"
               style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>About You</label>
-            <textarea value={form.bio} onChange={set('bio')} rows={3} className="input"
+            <textarea value={form.bio} onChange={set('bio')} rows={4} className="textarea"
               placeholder="Tell employers about yourself..." />
           </div>
 

@@ -84,6 +84,19 @@ export const jobService = {
 
     if (error) throw error;
 
+    // Check if current user has applied
+    let hasApplied = false;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: appData } = await supabase
+        .from('applications')
+        .select('id')
+        .eq('job_id', id)
+        .eq('seeker_id', user.id)
+        .maybeSingle();
+      if (appData) hasApplied = true;
+    }
+
     // Increment view count
     await supabase.from('jobs').update({ views_count: (data.views_count || 0) + 1 }).eq('id', id);
 
@@ -94,6 +107,7 @@ export const jobService = {
       employer_verified: data.profiles?.is_verified,
       skill_names:       data.job_skills?.map(js => js.skills?.name).filter(Boolean).join(','),
       skills:            data.job_skills?.map(js => js.skills).filter(Boolean),
+      hasApplied,
     };
   },
 
@@ -220,13 +234,32 @@ export const jobService = {
     return { success: true };
   },
 
+  getEmployerStats: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('jobs')
+      .select('id, is_active, views_count, applications(id)')
+      .eq('employer_id', user.id);
+
+    if (error) throw error;
+
+    const activeJobs = data.filter(j => j.is_active).length;
+    const totalJobs = data.length;
+    const totalApplications = data.reduce((sum, j) => sum + (j.applications?.length || 0), 0);
+    const totalViews = data.reduce((sum, j) => sum + (j.views_count || 0), 0);
+
+    return { activeJobs, totalJobs, totalApplications, totalViews };
+  },
+
   getMyJobs: async (page = 1, limit = 10) => {
     const { data: { user } } = await supabase.auth.getUser();
     const from = (page - 1) * limit;
 
     const { data, error, count } = await supabase
       .from('jobs')
-      .select('*, job_skills(skills(id,name))', { count: 'exact' })
+      .select('*, job_skills(skills(id,name)), applications(id)', { count: 'exact' })
       .eq('employer_id', user.id)
       .order('created_at', { ascending: false })
       .range(from, from + limit - 1);
@@ -238,7 +271,7 @@ export const jobService = {
         ...j,
         skill_names: j.job_skills?.map(js => js.skills?.name).filter(Boolean).join(','),
         skills:      j.job_skills?.map(js => js.skills).filter(Boolean),
-        applications_count: j.applications_count || 0,
+        applications_count: j.applications?.length || 0,
       })),
       pagination: { page, limit, total: count, pages: Math.ceil(count / limit) }
     };
@@ -249,7 +282,7 @@ export const jobService = {
       .from('applications')
       .select(`
         *,
-        profiles!seeker_id ( id, name, email, city, area, is_verified, exam_passed )
+        profiles!seeker_id ( id, name, email, phone, city, area, is_verified, exam_passed )
       `)
       .eq('job_id', jobId)
       .order('created_at', { ascending: false });
@@ -261,11 +294,21 @@ export const jobService = {
         ...a,
         seeker_id:       a.profiles?.id,
         seeker_name:     a.profiles?.name,
-        seeker_mobile:   a.profiles?.email,
+        seeker_mobile:   a.profiles?.phone || a.profiles?.email,
         seeker_city:     a.profiles?.city,
         seeker_verified: a.profiles?.is_verified,
         seeker_exam_passed: a.profiles?.exam_passed,
         canContact:      true,
+
+        // Flat mapping expected by JobApplications.jsx rendering & navigation
+        applicant_id:    a.profiles?.id,
+        name:            a.profiles?.name,
+        mobile:          a.profiles?.phone || a.profiles?.email,
+        phone:           a.profiles?.phone,
+        area:            a.profiles?.area,
+        city:            a.profiles?.city,
+        is_verified:     a.profiles?.is_verified,
+        exam_passed:     a.profiles?.exam_passed,
       }))
     };
   },

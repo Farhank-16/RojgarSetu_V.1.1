@@ -13,24 +13,26 @@ const EmployerDashboard = () => {
   const [stats, setStats]           = useState({ activeJobs: 0, totalApplications: 0, totalViews: 0, totalJobs: 0 });
 
   useEffect(() => {
-    jobService.getMyJobs(1, 5)
-      .then(({ jobs }) => {
-        setRecentJobs(jobs);
-        setStats({
-          activeJobs:        jobs.filter(j => j.is_active).length,
-          totalJobs:         jobs.length,
-          totalApplications: jobs.reduce((s, j) => s + (j.applications_count || 0), 0),
-          totalViews:        jobs.reduce((s, j) => s + (j.views_count || 0), 0),
-        });
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    const loadDashboardData = async () => {
+      try {
+        const [jobsResult, statsResult] = await Promise.all([
+          jobService.getMyJobs(1, 5),
+          jobService.getEmployerStats()
+        ]);
+        setRecentJobs(jobsResult.jobs);
+        setStats(statsResult);
+      } catch (err) {
+        console.error('Error loading dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadDashboardData();
   }, []);
 
   const STATS = [
     { icon: Briefcase,  bg: '#eff6ff', fg: '#2563eb', val: stats.activeJobs,        label: 'Active Jobs' },
     { icon: Users,      bg: '#f0fdf4', fg: '#16a34a', val: stats.totalApplications, label: 'Applications' },
-    { icon: Eye,        bg: '#faf5ff', fg: '#7c3aed', val: stats.totalViews,        label: 'Total Views' },
     { icon: TrendingUp, bg: '#fffbeb', fg: '#d97706', val: stats.totalJobs,         label: 'Total Jobs' },
   ];
 
@@ -63,15 +65,15 @@ const EmployerDashboard = () => {
       </div>
 
       {/* Stats grid */}
-      <div className="px-4 mt-6 grid grid-cols-2 gap-3 mb-5">
+      <div className="px-4 mt-6 grid grid-cols-3 gap-2 mb-5">
         {STATS.map(({ icon: Icon, bg, fg, val, label }) => (
-          <div key={label} className="card-elevated p-4">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-2"
+          <div key={label} className="card-elevated p-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2"
               style={{ background: bg }}>
-              <Icon className="w-5 h-5" style={{ color: fg }} />
+              <Icon className="w-4.5 h-4.5" style={{ color: fg }} />
             </div>
-            <p className="font-display text-2xl font-extrabold text-slate-900">{val}</p>
-            <p className="text-xs text-slate-400 mt-0.5">{label}</p>
+            <p className="font-display text-xl font-extrabold text-slate-900">{val}</p>
+            <p className="text-[10px] text-slate-400 mt-0.5 whitespace-nowrap">{label}</p>
           </div>
         ))}
       </div>
@@ -119,9 +121,6 @@ const EmployerDashboard = () => {
                 <div className="flex items-center gap-4 mt-3 pt-2.5 border-t border-slate-50">
                   <span className="flex items-center gap-1 text-xs text-slate-500">
                     <Users className="w-3.5 h-3.5" />{job.applications_count || 0} applied
-                  </span>
-                  <span className="flex items-center gap-1 text-xs text-slate-500">
-                    <Eye className="w-3.5 h-3.5" />{job.views_count || 0} views
                   </span>
                   <ChevronRight className="w-3.5 h-3.5 text-slate-300 ml-auto" />
                 </div>

@@ -92,17 +92,17 @@ const CandidateProfile = () => {
           <h3 className="font-display font-bold text-slate-800 text-sm pb-3">Details</h3>
           {[
             ['Experience',   profile.experience_years > 0 ? `${profile.experience_years} years` : null],
-            ['Email',        profile.email || null],
+            ['Email',        profile.email ? ((profile.canContact || isSubscribed) ? profile.email : '••••••••@••••.•••') : null],
             ['Availability', profile.availability?.replace(/_/g, ' ') || null],
           ].filter(([_, v]) => v).length > 0 ? (
             [
               ['Experience',   profile.experience_years > 0 ? `${profile.experience_years} years` : null],
-              ['Email',        profile.email || null],
+              ['Email',        profile.email ? ((profile.canContact || isSubscribed) ? profile.email : '••••••••@••••.•••') : null],
               ['Availability', profile.availability?.replace(/_/g, ' ') || null],
             ].filter(([_, v]) => v).map(([label, value]) => (
               <div key={label} className="flex items-center justify-between py-2.5">
                 <span className="text-xs text-slate-400">{label}</span>
-                <span className="font-semibold text-slate-800 text-sm capitalize truncate max-w-[200px]">{value}</span>
+                <span className="font-semibold text-slate-800 text-sm lowercase truncate max-w-[200px]">{value}</span>
               </div>
             ))
           ) : (
@@ -131,7 +131,7 @@ const CandidateProfile = () => {
                   <CheckCircle2 className="w-5 h-5 text-blue-600 flex-shrink-0" />
                   <div>
                     <p className="font-display font-bold text-blue-900 text-xs">Verified Profile</p>
-                    <p className="text-xs text-blue-500 mt-0.5">Identity verified by JobNest</p>
+                    <p className="text-xs text-blue-500 mt-0.5">Identity verified by RojgarSetu</p>
                   </div>
                 </div>
               )}
@@ -151,11 +151,11 @@ const CandidateProfile = () => {
       </div>
 
       {/* Bottom action */}
-      <div className=" left-0 right-0 bg-white border-t border-slate-100 p-4 safe-bottom">
-        {profile.canContact && profile.mobile ? (
-          <a href={`tel:${profile.mobile}`}
+      <div className="left-0 right-0 bg-white border-t border-slate-100 p-4 safe-bottom">
+        {(profile.canContact || isSubscribed) && (profile.phone || profile.mobile) ? (
+          <a href={`tel:${profile.phone || profile.mobile}`}
             className="btn-primary w-full py-4 text-base justify-between flex items-center px-5 rounded-[12px] no-underline">
-            <span className="flex items-center gap-2"><Phone className="w-5 h-5" /> Call {profile.mobile}</span>
+            <span className="flex items-center gap-2"><Phone className="w-5 h-5" /> Call {profile.phone || profile.mobile}</span>
             <ChevronRight className="w-5 h-5" />
           </a>
         ) : (

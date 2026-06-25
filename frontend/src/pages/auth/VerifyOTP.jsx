@@ -15,15 +15,17 @@ const VerifyOTP = () => {
   const email = sessionStorage.getItem('pendingEmail');
 
   useEffect(() => {
-        const t = setInterval(() => setResendTimer(p => p > 0 ? p - 1 : 0), 1000);
+    const t = setInterval(() => setResendTimer(p => p > 0 ? p - 1 : 0), 1000);
     return () => clearInterval(t);
   }, []);
 
-    if (!email) {
+  if (!email) {
     return (
-      <div className="px-6 py-8 text-center">
-        <p className="text-slate-500 mb-4">Session expired. Please login again.</p>
-        <button onClick={() => navigate('/login')} className="btn-primary px-6 py-3">Go to Login</button>
+      <div className="px-6 py-8 text-center space-y-4">
+        <p className="text-slate-500 text-sm">Session expired. Please request login again.</p>
+        <button onClick={() => navigate('/login')} className="btn-primary px-6 py-3 w-full justify-center" style={{ borderRadius: '12px' }}>
+          Go to Login
+        </button>
       </div>
     );
   }
@@ -62,48 +64,75 @@ const VerifyOTP = () => {
   };
 
   return (
-    <div className="px-6 py-8 page-enter">
-      <button onClick={() => navigate('/login')}
-        className="flex items-center gap-1.5 text-slate-400 text-sm mb-8 -ml-1">
-        <ArrowLeft className="w-4 h-4" /> Back
+    <div className="px-6 py-8 page-enter space-y-6">
+      
+      {/* Back button */}
+      <button 
+        onClick={() => navigate('/login')}
+        className="inline-flex items-center gap-1.5 text-slate-400 hover:text-slate-600 transition-colors text-xs font-bold uppercase tracking-wider -ml-1"
+      >
+        <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
       </button>
 
-      <div className="mb-8">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
-          style={{ background: 'linear-gradient(135deg, #eff6ff, #dbeafe)' }}>
-          <ShieldCheck className="w-7 h-7 text-blue-600" />
+      {/* Header Info */}
+      <div className="space-y-4">
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-blue-50 border border-blue-100 shadow-sm relative group">
+          {/* Heartbeat pulse glow */}
+          <span className="absolute inset-0 rounded-2xl bg-blue-400/20 animate-ping opacity-75" />
+          <ShieldCheck className="w-7 h-7 text-blue-600 relative z-10" />
         </div>
-        <h2 className="font-display text-2xl font-extrabold text-slate-900">Check your email</h2>
-        <p className="text-slate-500 mt-1.5 text-sm leading-relaxed">
-          We sent a 6-digit code to <span className="font-bold text-slate-800">{email}</span>
-        </p>
-        <p className="text-xs text-slate-400 mt-1">Check spam folder if not received</p>
+        
+        <div className="space-y-1">
+          <h2 className="font-display text-2xl font-bold text-slate-900 tracking-tight">Security Check</h2>
+          <p className="text-slate-500 text-xs sm:text-sm leading-relaxed">
+            We've sent a 6-digit code to <span className="font-bold text-slate-800 break-all">{email}</span>
+          </p>
+        </div>
       </div>
 
-      <div className="mb-8">
-        <OTPInput length={6} value={otp} onChange={setOtp} disabled={loading} />
+      {/* OTP Inputs */}
+      <div className="py-2">
+        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 text-center sm:text-left">
+          Enter Verification Code
+        </label>
+        <div className="flex justify-center">
+          <OTPInput length={6} value={otp} onChange={setOtp} disabled={loading} />
+        </div>
       </div>
 
-      <button onClick={handleVerify} disabled={otp.length !== 6 || loading}
-        className="btn-primary w-full py-4 text-base mb-6 disabled:opacity-50"
-        style={{ borderRadius: '12px' }}>
-        {loading
-          ? <span className="flex items-center gap-2 justify-center">
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Verifying...
-            </span>
-          : 'Verify & Continue'
-        }
+      {/* Submit button */}
+      <button 
+        onClick={handleVerify} 
+        disabled={otp.length !== 6 || loading}
+        className="btn-primary w-full py-3.5 text-sm justify-center shadow-lg disabled:opacity-50 hover:scale-[1.01] active:scale-[0.99]"
+        style={{ borderRadius: '12px' }}
+      >
+        {loading ? (
+          <span className="flex items-center gap-2">
+            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            Verifying Code...
+          </span>
+        ) : (
+          'Verify & Continue'
+        )}
       </button>
 
-      <div className="text-center">
-        {resendTimer > 0
-          ? <p className="text-slate-400 text-sm">Resend in <span className="font-display font-bold text-slate-600">{resendTimer}s</span></p>
-          : <button onClick={handleResend} className="flex items-center gap-1.5 text-blue-600 font-display font-semibold text-sm mx-auto">
-              <RefreshCw className="w-4 h-4" /> Resend OTP
-            </button>
-        }
+      {/* Resend actions */}
+      <div className="text-center pt-2 border-t border-slate-100">
+        {resendTimer > 0 ? (
+          <p className="text-slate-400 text-xs">
+            Resend security code in <span className="font-display font-bold text-slate-600">{resendTimer}s</span>
+          </p>
+        ) : (
+          <button 
+            onClick={handleResend} 
+            className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 font-display font-bold text-xs transition-colors"
+          >
+            <RefreshCw className="w-3.5 h-3.5" /> Resend Security Code
+          </button>
+        )}
       </div>
+
     </div>
   );
 };

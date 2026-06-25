@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Logo = ({ size = 'md' }) => {
+const Logo = ({ size = 'md', className = '', light = false }) => {
   const sizes = {
     sm: 'h-12',
     md: 'h-14',
@@ -11,7 +11,7 @@ const Logo = ({ size = 'md' }) => {
     <img
       src="/logoWOBG.jpeg"   
       alt="RojgarSetu Logo"
-      className={`${sizes[size]} width-auto object-contain brightness-0`}
+      className={`${sizes[size]} w-auto object-contain ${light ? 'brightness-0 invert' : 'brightness-0'} ${className}`}
     />
   );
 };
